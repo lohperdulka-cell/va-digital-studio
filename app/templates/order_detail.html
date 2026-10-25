@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Заказ #{{ order.id }} · {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+  <nav class="breadcrumbs" aria-label="Навигация">
+    <a href="/">Главная</a>
+    <span class="breadcrumbs__sep">/</span>
+    <a href="/profile">Профиль</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span>Заказ #{{ order.id }}</span>
+  </nav>
+
+  <div class="detail-grid">
+    <div>
+      <div class="row" style="margin-bottom:12px">
+        <span class="badge {{ order.status.css_class }}">{{ order.status.label }}</span>
+        <span class="dim small">создан {{ order.created_at | datetime_ru }}</span>
+      </div>
+
+      <h1>{{ order.title }}</h1>
+
+      <div class="card" style="margin-top:20px">
+        <h2 style="font-size:1.1rem">Описание задачи</h2>
+        {% if order.description %}
+          <p class="muted" style="white-space:pre-wrap;margin:0">{{ order.description }}</p>
+        {% else %}
+          <p class="dim" style="margin:0">
+            Описание пока не заполнено — обсудите детали с менеджером в чате.
+          </p>
+        {% endif %}
+      </div>
+
+      <div class="card" style="margin-top:20px">
+        <div class="row">
+          <div>
+            <h2 style="font-size:1.1rem;margin-bottom:4px">Чат по заказу</h2>
+            <p class="small muted" style="margin:0">
+              Обсудите детали, сроки и итоговую стоимость с менеджером.
+            </p>
+          </div>
+          <span class="spacer"></span>
+          <a class="btn btn--primary" href="/chat/{{ order.id }}">Открыть чат</a>
+        </div>
+      </div>
+    </div>
+
+    <aside class="detail-side">
+      <div class="card">
+        <span class="tiny dim">Стоимость</span>
+        <div class="price-tag gradient-text">{{ order.price_display }}</div>
+        {% if order.price_final is none %}
+          <p class="tiny dim" style="margin:6px 0 0">
+            Итоговая цена ещё не согласована — менеджер укажет её после обсуждения.
+          </p>
+        {% endif %}
+
+        <ul class="meta-list" style="margin-top:18px">
+          <li class="meta-list__row">
+            <span class="meta-list__label">Номер</span>
+            <span class="meta-list__value mono">#{{ order.id }}</span>
+          </li>
+          <li class="meta-list__row">
+            <span class="meta-list__label">Услуга</span>
+            <span class="meta-list__value">
+              {% if order.service %}
+                <a href="/catalog/{{ order.service.slug }}">{{ order.service.title }}</a>
+              {% else %}
+                Индивидуальный проект
+              {% endif %}
+            </span>
+          </li>
+          <li class="meta-list__row">
+            <span class="meta-list__label">Статус</span>
+            <span class="meta-list__value">{{ order.status.label }}</span>
+          </li>
+          <li class="meta-list__row">
+            <span class="meta-list__label">Обновлён</span>
+            <span class="meta-list__value">{{ order.updated_at | datetime_ru }}</span>
+          </li>
+        </ul>
+
+        <a class="btn btn--primary btn--block" href="/chat/{{ order.id }}" style="margin-top:18px">
+          💬 Связаться с менеджером
+        </a>
+      </div>
+    </aside>
+  </div>
+</div>
+{% endblock %}

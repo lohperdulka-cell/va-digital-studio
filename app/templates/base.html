@@ -1,1 +1,46 @@
-#temp
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ app_name }}{% endblock %}</title>
+  <meta name="description" content="{% block description %}VA Digital Studio — разработка сайтов, Telegram-ботов, автоматизация и дизайн под ключ.{% endblock %}">
+  {# The CSRF token is exposed for fetch() calls; the cookie itself stays httponly. #}
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <meta name="theme-color" content="#070a18">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="{{ url_for('static', path='css/base.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', path='css/components.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', path='css/layout.css') }}">
+  {% block head_extra %}{% endblock %}
+</head>
+<body>
+  <a class="skip-link" href="#main">Перейти к содержимому</a>
+
+  {% include "partials/header.html" %}
+  {% include "partials/burger_menu.html" %}
+
+  <div class="flash-stack" id="flash-stack" role="status" aria-live="polite">
+    {% for item in flash_messages %}
+      <div class="flash flash--{{ item.level }}">
+        <span>{{ item.message }}</span>
+        <button type="button" class="flash__close" data-flash-close aria-label="Закрыть">&times;</button>
+      </div>
+    {% endfor %}
+  </div>
+
+  <main id="main" class="{% block main_class %}page{% endblock %}">
+    {% block content %}{% endblock %}
+  </main>
+
+  {% include "partials/footer.html" %}
+  {% include "partials/support_modal.html" %}
+
+  <script src="{{ url_for('static', path='js/app.js') }}" defer></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

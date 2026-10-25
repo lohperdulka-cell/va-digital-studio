@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% block title %}VA Digital Studio — сайты, Telegram-боты, автоматизация{% endblock %}
+
+{% block content %}
+{# --- Hero ------------------------------------------------------------- #}
+<section class="hero">
+  <div class="container">
+    <div class="hero__grid">
+      <div>
+        <span class="badge badge--cyan hero__badge">⚡ Цифровые продукты под ключ</span>
+        <h1 class="hero__title">
+          Превращаем идеи в <span class="gradient-text">работающие продукты</span>
+        </h1>
+        <p class="hero__lead">
+          Проектируем и разрабатываем сайты, Telegram-ботов и автоматизацию,
+          которая экономит часы вашей команды. Берём на себя всё: от аналитики
+          до поддержки после запуска.
+        </p>
+        <div class="hero__actions">
+          <a class="btn btn--primary btn--lg" href="/catalog">Смотреть услуги</a>
+          <a class="btn btn--ghost btn--lg" href="/contact">Оставить заявку</a>
+        </div>
+
+        <div class="hero__stats">
+          <div>
+            <div class="stat__value gradient-text">{{ stats.services }}</div>
+            <div class="stat__label">направлений услуг</div>
+          </div>
+          <div>
+            <div class="stat__value gradient-text">{{ stats.orders }}</div>
+            <div class="stat__label">проектов в работе и завершено</div>
+          </div>
+          <div>
+            <div class="stat__value gradient-text">{{ stats.days }}</div>
+            <div class="stat__label">дней средний срок запуска</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero__visual" aria-hidden="true">
+        <div class="terminal__bar">
+          <span class="terminal__dot"></span>
+          <span class="terminal__dot"></span>
+          <span class="terminal__dot"></span>
+        </div>
+        <div class="terminal__body">
+          <div class="terminal__line"><span class="terminal__prompt">$</span> va deploy --project mysite</div>
+          <div class="terminal__line"><span class="terminal__prompt">→</span> Аналитика <span class="terminal__value">готово</span></div>
+          <div class="terminal__line"><span class="terminal__prompt">→</span> Дизайн <span class="terminal__value">готово</span></div>
+          <div class="terminal__line"><span class="terminal__prompt">→</span> Разработка <span class="terminal__value">готово</span></div>
+          <div class="terminal__line"><span class="terminal__prompt">→</span> Запуск <span class="terminal__value">за 14 дней</span></div>
+          <div class="terminal__line"><span class="terminal__prompt">$</span> <span class="terminal__caret"></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{# --- Services --------------------------------------------------------- #}
+<section class="section" id="services">
+  <div class="container">
+    <div class="section-head">
+      <span class="section-head__eyebrow">Наши услуги</span>
+      <h2 class="section-head__title">Что мы делаем</h2>
+      <p class="section-head__subtitle">
+        Выберите направление — на странице услуги есть состав работ, сроки и стоимость.
+      </p>
+    </div>
+
+    {% if services %}
+      <div class="grid grid--cards">
+        {% for service in services %}
+          <article class="card card--hover">
+            <div class="card__header">
+              <span class="card__icon" aria-hidden="true">{{ service.icon }}</span>
+              <span class="badge">{{ service.category_label }}</span>
+            </div>
+            <h3 class="card__title">
+              <a href="/catalog/{{ service.slug }}">{{ service.title }}</a>
+            </h3>
+            <p class="card__body">{{ service.short_description }}</p>
+            {% if service.tags %}
+              <div class="chips" style="margin-top:14px">
+                {% for tag in service.tags[:3] %}<span class="chip">{{ tag }}</span>{% endfor %}
+              </div>
+            {% endif %}
+            <div class="card__footer">
+              <span><strong>{{ service.price_display }}</strong></span>
+              <a class="btn btn--cyan btn--sm" href="/catalog/{{ service.slug }}">Подробнее</a>
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+      <div class="row" style="justify-content:center;margin-top:32px">
+        <a class="btn btn--ghost" href="/catalog">Все услуги →</a>
+      </div>
+    {% else %}
+      <div class="empty">
+        <div class="empty__icon" aria-hidden="true">🧩</div>
+        <h3 class="empty__title">Каталог наполняется</h3>
+        <p class="empty__text">Скоро здесь появятся наши услуги. Оставьте заявку — расскажем подробнее.</p>
+        <a class="btn btn--primary" href="/contact">Оставить заявку</a>
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+{# --- Why us ----------------------------------------------------------- #}
+<section class="section">
+  <div class="container">
+    <div class="features">
+      <div class="card card--flat">
+        <div class="card__icon" aria-hidden="true">🎯</div>
+        <h3 class="card__title">Погружаемся в задачу</h3>
+        <p class="card__body">Начинаем с бизнес-цели, а не с шаблона. Решение подстраиваем под ваш процесс.</p>
+      </div>
+      <div class="card card--flat">
+        <div class="card__icon" aria-hidden="true">⚙️</div>
+        <h3 class="card__title">Прозрачный процесс</h3>
+        <p class="card__body">Статусы, чат по проекту и фиксированная смета — вы всегда знаете, на каком этапе работа.</p>
+      </div>
+      <div class="card card--flat">
+        <div class="card__icon" aria-hidden="true">🚀</div>
+        <h3 class="card__title">Быстрый запуск</h3>
+        <p class="card__body">Типовые проекты — от 7 дней. Никаких месяцев ожидания и потерянных договорённостей.</p>
+      </div>
+      <div class="card card--flat">
+        <div class="card__icon" aria-hidden="true">🛡️</div>
+        <h3 class="card__title">Поддержка после</h3>
+        <p class="card__body">Не исчезаем после сдачи: следим за работой, обновляем и развиваем продукт.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+{# --- News ------------------------------------------------------------- #}
+{% if news %}
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <span class="section-head__eyebrow">Новости</span>
+      <h2 class="section-head__title">Что происходит в студии</h2>
+    </div>
+
+    <div class="grid grid--cards">
+      {% for item in news %}
+        {% include "partials/news_card.html" %}
+      {% endfor %}
+    </div>
+
+    <div class="row" style="justify-content:center;margin-top:32px">
+      <a class="btn btn--ghost" href="/news">Все новости →</a>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{# --- CTA -------------------------------------------------------------- #}
+<section class="section">
+  <div class="container">
+    <div class="cta">
+      <h2>Обсудим ваш проект?</h2>
+      <p>
+        Оставьте заявку — вернёмся с уточняющими вопросами и предложением
+        в течение одного рабочего дня.
+      </p>
+      <a class="btn btn--lg" href="/contact">Оставить заявку</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

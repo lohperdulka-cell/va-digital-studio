@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Мои заказы · {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+  <nav class="breadcrumbs" aria-label="Навигация">
+    <a href="/">Главная</a>
+    <span class="breadcrumbs__sep">/</span>
+    <a href="/profile">Профиль</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span>Мои заказы</span>
+  </nav>
+
+  <div class="dash__head">
+    <h1 class="dash__title">Мои заказы</h1>
+    <a class="btn btn--primary btn--sm" href="/catalog">+ Новый заказ</a>
+  </div>
+
+  {% if orders %}
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>№</th>
+            <th>Услуга</th>
+            <th>Статус</th>
+            <th>Стоимость</th>
+            <th>Создан</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for order in orders %}
+            <tr>
+              <td class="mono">#{{ order.id }}</td>
+              <td>
+                {{ order.title }}
+                {% if order.service %}
+                  <div class="tiny dim">{{ order.service.title }}</div>
+                {% endif %}
+              </td>
+              <td><span class="badge {{ order.status.css_class }}">{{ order.status.label }}</span></td>
+              <td>{{ order.price_display }}</td>
+              <td class="dim small">{{ order.created_at | date_ru }}</td>
+              <td>
+                <div class="row" style="gap:8px;flex-wrap:nowrap">
+                  <a class="btn btn--ghost btn--sm" href="/profile/orders/{{ order.id }}">Открыть</a>
+                  <a class="btn btn--cyan btn--sm" href="/chat/{{ order.id }}">Чат</a>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty">
+      <div class="empty__icon" aria-hidden="true">📦</div>
+      <h2 class="empty__title">Заказов пока нет</h2>
+      <p class="empty__text">Выберите услугу — мы создадим заказ и откроем чат с менеджером.</p>
+      <a class="btn btn--primary" href="/catalog">Перейти в каталог</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

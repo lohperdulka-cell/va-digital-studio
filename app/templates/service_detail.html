@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}{{ service.title }} · {{ app_name }}{% endblock %}
+{% block description %}{{ service.short_description }}{% endblock %}
+
+{% block content %}
+<div class="container">
+  <nav class="breadcrumbs" aria-label="Навигация">
+    <a href="/">Главная</a>
+    <span class="breadcrumbs__sep">/</span>
+    <a href="/catalog">Каталог</a>
+    <span class="breadcrumbs__sep">/</span>
+    <a href="/catalog?category={{ service.category.value }}">{{ service.category_label }}</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span>{{ service.title }}</span>
+  </nav>
+
+  <div class="detail-grid">
+    <div>
+      <div class="row" style="margin-bottom:16px">
+        <span class="card__icon" aria-hidden="true">{{ service.icon }}</span>
+        <span class="badge badge--accent">{{ service.category_label }}</span>
+      </div>
+
+      <h1>{{ service.title }}</h1>
+      <p class="muted" style="font-size:1.08rem">{{ service.short_description }}</p>
+
+      {% if service.description %}
+        <div class="card" style="margin-top:24px">
+          <h2 style="font-size:1.15rem">Состав работ</h2>
+          {# Admin-authored content, sanitised on save (app/security/sanitize.py). #}
+          <div class="news-body">{{ service.description | safe }}</div>
+        </div>
+      {% endif %}
+
+      {% if service.tags %}
+        <div style="margin-top:24px">
+          <h2 style="font-size:1.05rem">Технологии и теги</h2>
+          <div class="chips">
+            {% for tag in service.tags %}<span class="chip">{{ tag }}</span>{% endfor %}
+          </div>
+        </div>
+      {% endif %}
+    </div>
+
+    <aside class="detail-side">
+      <div class="card">
+        <div class="price-tag gradient-text">{{ service.price_display }}</div>
+        <p class="small muted">Итоговая стоимость зависит от объёма задач и согласуется в чате.</p>
+
+        <ul class="meta-list">
+          <li class="meta-list__row">
+            <span class="meta-list__label">Категория</span>
+            <span class="meta-list__value">{{ service.category_label }}</span>
+          </li>
+          <li class="meta-list__row">
+            <span class="meta-list__label">Срок</span>
+            <span class="meta-list__value">~{{ service.duration_days }} дней</span>
+          </li>
+          <li class="meta-list__row">
+            <span class="meta-list__label">Формат</span>
+            <span class="meta-list__value">Обсудим в чате</span>
+          </li>
+        </ul>
+
+        <form method="post" action="/orders" style="margin-top:20px">
+          <input type="hidden" name="{{ csrf_field_name }}" value="{{ csrf_token }}">
+          <input type="hidden" name="service_id" value="{{ service.id }}">
+          <input type="hidden" name="title" value="{{ service.title }}">
+          <input type="hidden" name="next" value="/catalog/{{ service.slug }}">
+          <button type="submit" class="btn btn--primary btn--block btn--lg">
+            Заказать
+          </button>
+        </form>
+
+        <button type="button" class="btn btn--ghost btn--block" data-support-open style="margin-top:10px">
+          Задать вопрос
+        </button>
+
+        <p class="tiny dim center" style="margin:14px 0 0">
+          Создадим черновик заказа и откроем чат с менеджером
+        </p>
+      </div>
+
+      <div class="card card--flat">
+        <h2 style="font-size:1rem">Как мы работаем</h2>
+        <ul class="small muted" style="margin:0;padding-left:1.1em">
+          <li>Обсуждаем задачу в чате по заказу</li>
+          <li>Фиксируем состав работ и стоимость</li>
+          <li>Разрабатываем и показываем промежуточные результаты</li>
+          <li>Сдаём проект и остаёмся на поддержке</li>
+        </ul>
+      </div>
+    </aside>
+  </div>
+
+  {% if related %}
+    <section class="section">
+      <div class="section-head">
+        <h2 class="section-head__title">Похожие услуги</h2>
+      </div>
+      <div class="grid grid--cards">
+        {% for item in related %}
+          <article class="card card--hover">
+            <div class="card__header">
+              <span class="card__icon" aria-hidden="true">{{ item.icon }}</span>
+              <span class="badge">{{ item.category_label }}</span>
+            </div>
+            <h3 class="card__title"><a href="/catalog/{{ item.slug }}">{{ item.title }}</a></h3>
+            <p class="card__body">{{ item.short_description }}</p>
+            <div class="card__footer">
+              <strong>{{ item.price_display }}</strong>
+              <a class="btn btn--cyan btn--sm" href="/catalog/{{ item.slug }}">Подробнее</a>
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    </section>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}О студии · {{ app_name }}{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <div class="container">
+    <div class="section-head">
+      <span class="section-head__eyebrow">О студии</span>
+      <h1 class="section-head__title">Небольшая команда с <span class="gradient-text">большим фокусом</span></h1>
+      <p class="section-head__subtitle">
+        VA Digital Studio — это разработка, дизайн и автоматизация в одном месте.
+        Мы не распыляемся: берём проекты, в которых можем довести результат до конца.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="container">
+    <div class="features">
+      <div class="card card--flat">
+        <div class="card__icon" aria-hidden="true">🧭</div>
+        <h3 class="card__title">Понятные договорённости</h3>
+        <p class="card__body">Смета, сроки и состав работ фиксируются до старта. Без «доплатите за мелочь».</p>
+      </div>
+      <div class="card card--flat">
+        <div class="card__icon" aria-hidden="true">💬</div>
+        <h3 class="card__title">Прямая коммуникация</h3>
+        <p class="card__body">Чат по каждому проекту: видно статус, историю решений и итоговую стоимость.</p>
+      </div>
+      <div class="card card--flat">
+        <div class="card__icon" aria-hidden="true">🔧</div>
+        <h3 class="card__title">Поддержка после запуска</h3>
+        <p class="card__body">Обновляем, дорабатываем и следим за стабильностью — по запросу или по регламенту.</p>
+      </div>
+    </div>
+
+    <div class="grid grid--cards" style="margin-top:28px">
+      <div class="card">
+        <h2 style="font-size:1.1rem">Что мы делаем</h2>
+        <ul class="small muted" style="margin:0;padding-left:1.1em">
+          <li>Корпоративные сайты, лендинги и интернет-магазины</li>
+          <li>Telegram-боты: заявки, оплата, интеграции с CRM</li>
+          <li>Автоматизация рутинных процессов и отчётов</li>
+          <li>UI/UX дизайн, брендинг и дизайн-системы</li>
+          <li>Техническая поддержка и развитие продукта</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h2 style="font-size:1.1rem">Как мы работаем</h2>
+        <ol class="small muted" style="margin:0;padding-left:1.3em">
+          <li>Знакомимся и уточняем задачу</li>
+          <li>Готовим смету и план работ</li>
+          <li>Разрабатываем и показываем прогресс</li>
+          <li>Тестируем, запускаем и передаём доступы</li>
+          <li>Остаёмся на поддержке</li>
+        </ol>
+      </div>
+      <div class="card">
+        <h2 style="font-size:1.1rem">Технологии</h2>
+        <div class="chips">
+          <span class="chip">Python</span>
+          <span class="chip">FastAPI</span>
+          <span class="chip">PostgreSQL</span>
+          <span class="chip">Docker</span>
+          <span class="chip">React</span>
+          <span class="chip">aiogram</span>
+          <span class="chip">Figma</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="cta" style="margin-top:32px">
+      <h2>Готовы обсудить задачу?</h2>
+      <p>Оставьте заявку — предложим решение и назовём сроки.</p>
+      <a class="btn btn--lg" href="/contact">Оставить заявку</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

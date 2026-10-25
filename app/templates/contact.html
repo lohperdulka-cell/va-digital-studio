@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Оставить заявку · {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width:680px">
+  <nav class="breadcrumbs" aria-label="Навигация">
+    <a href="/">Главная</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span>Заявка</span>
+  </nav>
+
+  <div class="section-head">
+    <span class="section-head__eyebrow">Свяжитесь с нами</span>
+    <h1 class="section-head__title">Оставить заявку</h1>
+    <p class="section-head__subtitle">
+      Расскажите о задаче — вернёмся с уточняющими вопросами и предложением
+      в течение одного рабочего дня.
+    </p>
+  </div>
+
+  {% include "partials/form_errors.html" %}
+
+  <div class="card">
+    <form class="form" method="post" action="/contact">
+      <input type="hidden" name="{{ csrf_field_name }}" value="{{ csrf_token }}">
+
+      <div class="field">
+        <label class="field__label" for="contact-name">Имя</label>
+        <input class="input" type="text" id="contact-name" name="name"
+               value="{{ form.name or (current_user.display_name if current_user else '') }}"
+               maxlength="200" autocomplete="name" placeholder="Как к вам обращаться">
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="contact-email">E-mail <span class="dim">— обязателен</span></label>
+        <input class="input" type="email" id="contact-email" name="email" required
+               value="{{ form.email or (current_user.email if current_user else '') }}"
+               maxlength="320" autocomplete="email" placeholder="you@example.com">
+        <span class="field__hint">Ответим на этот адрес</span>
+      </div>
+
+      {% if services %}
+        <div class="field">
+          <label class="field__label" for="contact-service">Интересующая услуга</label>
+          <select class="select" id="contact-service" name="service_id">
+            <option value="">— Не выбрано / индивидуальный проект —</option>
+            {% for service in services %}
+              <option value="{{ service.id }}"
+                      {% if form.service_id == service.id %}selected{% endif %}>
+                {{ service.title }} ({{ service.price_display }})
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+      {% endif %}
+
+      <div class="field">
+        <label class="field__label" for="contact-subject">Тема</label>
+        <input class="input" type="text" id="contact-subject" name="subject" required
+               value="{{ form.subject or '' }}" minlength="3" maxlength="200"
+               placeholder="Например: нужен Telegram-бот для приёма заявок">
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="contact-message">Описание задачи</label>
+        <textarea class="textarea" id="contact-message" name="message" required
+                  minlength="10" maxlength="5000"
+                  placeholder="Что нужно сделать, какие сроки и бюджет рассматриваете">{{ form.message or '' }}</textarea>
+        <span class="field__hint">До 5000 символов</span>
+      </div>
+
+      <button type="submit" class="btn btn--primary btn--block btn--lg">Отправить заявку</button>
+
+      <p class="tiny dim" style="margin:0">
+        Заявка попадёт в поддержку — мы ответим на указанный e-mail.
+        {% if not current_user %}
+          Можно также <a href="/auth/login?next=/contact">войти через Google</a>, чтобы видеть историю обращений.
+        {% endif %}
+      </p>
+    </form>
+  </div>
+</div>
+{% endblock %}

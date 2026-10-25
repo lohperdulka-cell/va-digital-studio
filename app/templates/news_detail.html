@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}{{ item.title }} · {{ app_name }}{% endblock %}
+{% block description %}{{ item.preview }}{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width:840px">
+  <nav class="breadcrumbs" aria-label="Навигация">
+    <a href="/">Главная</a>
+    <span class="breadcrumbs__sep">/</span>
+    <a href="/news">Новости</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span>{{ item.title }}</span>
+  </nav>
+
+  <article>
+    <div class="news-card__cover" style="height:170px;font-size:3.4rem" aria-hidden="true">
+      {{ item.cover_emoji }}
+    </div>
+
+    <div class="row" style="margin:18px 0 10px">
+      <span class="badge">{{ item.published_at | date_ru }}</span>
+    </div>
+
+    <h1>{{ item.title }}</h1>
+    <p class="muted" style="font-size:1.08rem">{{ item.preview }}</p>
+
+    <div class="news-body" style="margin-top:26px">
+      {# Admin-authored body, sanitised with an allowlist on save. #}
+      {{ item.body | safe }}
+    </div>
+
+    <div class="row" style="margin-top:34px;padding-top:22px;border-top:1px solid var(--border-soft)">
+      <button type="button"
+              class="like-btn {% if item.liked_by(current_user.id if current_user else none) %}is-liked{% endif %}"
+              data-like-button
+              data-news-id="{{ item.id }}"
+              data-liked="{{ 'true' if item.liked_by(current_user.id if current_user else none) else 'false' }}"
+              aria-pressed="{{ 'true' if item.liked_by(current_user.id if current_user else none) else 'false' }}"
+              aria-label="Поставить лайк">
+        <span class="like-btn__icon" aria-hidden="true">♥</span>
+        <span data-like-count>{{ item.likes_count }}</span>
+      </button>
+      <span class="dim small">
+        {{ item.likes_count }} {{ item.likes_count | plural('лайк', 'лайка', 'лайков') }}
+      </span>
+      <span class="spacer"></span>
+      <a class="btn btn--ghost btn--sm" href="/news">← Все новости</a>
+    </div>
+  </article>
+</div>
+{% endblock %}

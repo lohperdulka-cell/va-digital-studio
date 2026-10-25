@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Чат по заказу #{{ order.id }} · {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+  <nav class="breadcrumbs" aria-label="Навигация">
+    <a href="/">Главная</a>
+    <span class="breadcrumbs__sep">/</span>
+    {% if as_admin %}
+      <a href="/dashboard/chats">Чаты</a>
+    {% else %}
+      <a href="/profile">Профиль</a>
+    {% endif %}
+    <span class="breadcrumbs__sep">/</span>
+    <span>Заказ #{{ order.id }}</span>
+  </nav>
+
+  <div class="row" style="margin-bottom:16px;align-items:flex-start">
+    <div>
+      <h1 style="margin-bottom:4px">{{ order.title }}</h1>
+      <div class="row small dim" style="gap:10px">
+        <span class="badge {{ order.status.css_class }}">{{ order.status.label }}</span>
+        {% if as_admin %}
+          <span>{{ order.user.display_name }} · {{ order.user.email }}</span>
+        {% endif %}
+        <span>Заказ #{{ order.id }}</span>
+      </div>
+    </div>
+    <span class="spacer"></span>
+    {% if as_admin %}
+      <a class="btn btn--ghost btn--sm" href="/dashboard/orders/{{ order.id }}">Управление заказом</a>
+    {% else %}
+      <a class="btn btn--ghost btn--sm" href="/profile/orders/{{ order.id }}">Детали заказа</a>
+    {% endif %}
+  </div>
+
+  {# data-ws-path drives the VAChat client in app.js #}
+  <section class="chat" data-chat data-ws-path="{{ ws_path }}">
+    <div class="chat__header">
+      <div>
+        <strong>
+          {% if as_admin %}Чат с клиентом{% else %}Чат с менеджером{% endif %}
+        </strong>
+        <div class="tiny dim">
+          {% if order.service %}{{ order.service.title }}{% else %}Индивидуальный проект{% endif %}
+        </div>
+      </div>
+      <span class="spacer"></span>
+      <span class="chat__status">
+        <span class="chat__dot" data-chat-status></span>
+      </span>
+    </div>
+
+    <div class="chat__log" data-chat-log role="log" aria-live="polite"
+         aria-label="Сообщения чата">
+      <div class="chat__msg chat__msg--system">
+        <div class="chat__bubble">Загружаем историю сообщений…</div>
+      </div>
+    </div>
+
+    <div class="chat__typing" data-chat-typing aria-live="polite"></div>
+
+    <form class="chat__form" data-chat-form autocomplete="off">
+      <label class="sr-only" for="chat-input">Сообщение</label>
+      <textarea class="chat__input" id="chat-input" name="text" rows="1"
+                maxlength="2000" placeholder="Напишите сообщение…"
+                data-chat-input required></textarea>
+      <button type="submit" class="btn btn--primary">Отправить</button>
+    </form>
+  </section>
+
+  <p class="tiny dim" style="margin-top:12px">
+    Сообщения сохраняются в истории заказа. Не отправляйте пароли и данные карт.
+  </p>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  window.addEventListener("DOMContentLoaded", function () {
+    var root = document.querySelector("[data-chat]");
+    if (!root || !window.VAChat) return;
+    window.VAChat({
+      wsPath: root.dataset.wsPath,
+      logSelector: "[data-chat-log]",
+      formSelector: "[data-chat-form]",
+      inputSelector: "[data-chat-input]",
+      statusSelector: "[data-chat-status]",
+      typingSelector: "[data-chat-typing]"
+    });
+  });
+</script>
+{% endblock %}
