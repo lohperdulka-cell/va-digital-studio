@@ -1,0 +1,74 @@
+# Render blueprint (infrastructure as code).
+#
+# Deploy with: Render Dashboard -> New -> Blueprint -> pick this repository.
+# Secrets marked `sync: false` are prompted for in the dashboard and never
+# stored in git.  `generateValue: true` makes Render mint a random value.
+
+databases:
+  - name: va-studio-db
+    databaseName: va_studio
+    user: va_studio
+    # Free instances are fine for a demo but expire after 30 days and cannot be
+    # backed up; use at least `basic-256mb` for anything real.
+    plan: free
+    region: frankfurt
+
+services:
+  - type: web
+    name: va-digital-studio
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    # The image's CMD already runs migrations then the server; stating it here
+    # keeps the dashboard readable.
+    dockerCommand: /app/start.sh
+    plan: starter
+    region: frankfurt
+    healthCheckPath: /healthz
+    autoDeploy: true
+    # One instance on purpose: the WebSocket chat hub and the rate limiter keep
+    # state in process memory (see README "Scaling").  Scaling out requires
+    # Redis-backed state first.
+    numInstances: 1
+    envVars:
+      # --- Runtime ---------------------------------------------------------
+      - key: APP_ENV
+        value: production
+      - key: DEBUG
+        value: "false"
+      # Render terminates TLS and proxies to the container over HTTP.
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: WEB_CONCURRENCY
+        value: "1"
+      # BASE_URL is derived from RENDER_EXTERNAL_URL automatically; set it
+      # explicitly only for a custom domain.
+
+      # --- Database --------------------------------------------------------
+      # Injected from the database above.  Render emits a bare `postgresql://`
+      # URL, which app/config.py rewrites to `postgresql+psycopg2://`.
+      - key: DATABASE_URL
+        fromDatabase:
+          name: va-studio-db
+          property: connectionString
+
+      # --- Secrets ---------------------------------------------------------
+      - key: SECRET_KEY
+        generateValue: true
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: ADMIN_EMAILS
+        sync: false
+
+      # --- Optional e-mail -------------------------------------------------
+      - key: SUPPORT_EMAIL
+        value: support@vadigital.studio
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false

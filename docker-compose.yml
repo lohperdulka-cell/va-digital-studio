@@ -1,0 +1,54 @@
+# Local development stack: the app plus PostgreSQL.
+#
+#   cp .env.example .env      # then fill in SECRET_KEY and Google OAuth values
+#   docker compose up --build
+#
+# The app waits for Postgres to report healthy, applies migrations, then serves
+# on http://localhost:8000.
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-va}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-va_password}
+      POSTGRES_DB: ${POSTGRES_DB:-va_studio}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-va} -d ${POSTGRES_DB:-va_studio}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # DATABASE_URL in .env wins; this is the in-cluster default.
+      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://va:va_password@db:5432/va_studio}
+      SECRET_KEY: ${SECRET_KEY:?set SECRET_KEY in .env}
+      APP_ENV: ${APP_ENV:-production}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      BASE_URL: ${BASE_URL:-http://localhost:8000}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      ADMIN_EMAILS: ${ADMIN_EMAILS:-}
+      SUPPORT_EMAIL: ${SUPPORT_EMAIL:-support@vadigital.studio}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    volumes:
+      - app_logs:/app/logs
+    ports:
+      - "${APP_PORT:-8000}:8000"
+
+volumes:
+  postgres_data:
+  app_logs:

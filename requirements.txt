@@ -1,0 +1,43 @@
+# --- Web framework ---
+fastapi>=0.115,<1.0
+uvicorn[standard]>=0.30
+jinja2>=3.1
+python-multipart>=0.0.9
+websockets>=12.0
+
+# --- Data layer ---
+SQLAlchemy>=2.0,<3.0
+alembic>=1.13
+# Two drivers on purpose:
+#   psycopg (v3)   -> used by docker-compose via `postgresql+psycopg://`
+#   psycopg2       -> SQLAlchemy's default for a bare `postgresql://`, which is
+#                     the shape of the DATABASE_URL cloud providers hand out
+#                     (Render, Heroku, ...).  See app/config.py normalisation.
+psycopg[binary]>=3.1 ; platform_python_implementation == "CPython"
+psycopg2-binary>=2.9 ; platform_python_implementation == "CPython"
+
+# --- Production server ---
+# Gunicorn supervises worker processes; uvicorn.workers.UvicornWorker runs the
+# ASGI app inside each one.  Note the worker count must stay at 1 while chat
+# and rate-limit state live in process memory (see README "Scaling").
+gunicorn>=22.0
+
+# --- Settings / validation ---
+pydantic>=2.7
+pydantic-settings>=2.3
+email-validator>=2.1
+
+# --- Auth ---
+authlib>=1.3
+itsdangerous>=2.2
+httpx>=0.27
+PyJWT>=2.8
+passlib[bcrypt]>=1.7.4
+
+# --- Security ---
+bleach>=6.1
+# Rate limiting is implemented in app/security/ratelimit.py; slowapi is not used.
+
+# --- Tests ---
+pytest>=8.2
+pytest-asyncio>=0.23
