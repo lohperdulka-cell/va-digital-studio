@@ -1,0 +1,121 @@
+{% extends "dashboard/base.html" %}
+{% set editing = service is not none %}
+{% block dash_title %}{{ 'Изменить услугу' if editing else 'Новая услуга' }}{% endblock %}
+
+{% block crumbs %}
+  <span class="breadcrumbs__sep">/</span>
+  <a href="/dashboard/services">Услуги</a>
+  <span class="breadcrumbs__sep">/</span>
+  <span>{{ 'Изменить' if editing else 'Новая' }}</span>
+{% endblock %}
+
+{% block dash_content %}
+<div class="dash__head">
+  <h1 class="dash__title">{{ 'Изменить услугу' if editing else 'Новая услуга' }}</h1>
+  <a class="btn btn--ghost btn--sm" href="/dashboard/services">← К списку</a>
+</div>
+
+<form method="post" action="/dashboard/services/save" class="card">
+  <input type="hidden" name="{{ csrf_field_name }}" value="{{ csrf_token }}">
+  {% if editing %}<input type="hidden" name="service_id" value="{{ service.id }}">{% endif %}
+
+  <div class="field-grid">
+    <label class="field">
+      <span class="field__label">Название *</span>
+      <input class="input" type="text" name="title" required maxlength="200"
+             value="{{ form.get('title', '') }}" placeholder="Разработка сайтов">
+    </label>
+
+    <label class="field">
+      <span class="field__label">Категория</span>
+      <select class="input" name="category">
+        {% for category in categories %}
+          <option value="{{ category.value }}"
+            {% if form.get('category') == category or form.get('category') == category.value %}selected{% endif %}>
+            {{ category.label }}
+          </option>
+        {% endfor %}
+      </select>
+    </label>
+
+    <label class="field">
+      <span class="field__label">Slug (URL)</span>
+      <input class="input" type="text" name="slug" maxlength="120"
+             value="{{ form.get('slug', '') }}" placeholder="website-development">
+      <span class="field__hint">Пусто — соберём из названия автоматически.</span>
+    </label>
+
+    <label class="field">
+      <span class="field__label">Иконка (эмодзи)</span>
+      <input class="input" type="text" name="icon" maxlength="8"
+             value="{{ form.get('icon', '🚀') }}">
+    </label>
+
+    <label class="field">
+      <span class="field__label">Цена от, ₽</span>
+      <input class="input" type="text" inputmode="decimal" name="price_from"
+             value="{{ form.get('price_from', '0') }}">
+    </label>
+
+    <label class="field">
+      <span class="field__label">Срок, дней</span>
+      <input class="input" type="number" name="duration_days" min="0" max="3650"
+             value="{{ form.get('duration_days', 14) }}">
+    </label>
+
+    <label class="field">
+      <span class="field__label">Порядок сортировки</span>
+      <input class="input" type="number" name="sort_order" min="0" max="9999"
+             value="{{ form.get('sort_order', 0) }}">
+      <span class="field__hint">Меньше — выше в каталоге.</span>
+    </label>
+  </div>
+
+  <label class="field" style="margin-top:16px">
+    <span class="field__label">Краткое описание</span>
+    <input class="input" type="text" name="short_description" maxlength="400"
+           value="{{ form.get('short_description', '') }}"
+           placeholder="Лендинги, корпоративные сайты и интернет-магазины">
+  </label>
+
+  <label class="field" style="margin-top:16px">
+    <span class="field__label">Теги</span>
+    <input class="input" type="text" name="tags" maxlength="400"
+           value="{{ form.get('tags', '') }}" placeholder="лендинг, cms, seo">
+    <span class="field__hint">Через запятую. Показываются как чипы в каталоге.</span>
+  </label>
+
+  <label class="field" style="margin-top:16px">
+    <span class="field__label">Полное описание</span>
+    <textarea class="input" name="description" rows="10"
+              placeholder="Что входит в услугу, этапы работы, результат…">{{ form.get('description', '') }}</textarea>
+    <span class="field__hint">Допустимо простое форматирование: абзацы, списки, ссылки.</span>
+  </label>
+
+  <div class="row" style="margin-top:20px;gap:20px">
+    <label class="checkbox">
+      <input type="checkbox" name="is_active" value="1"
+             {% if form.get('is_active', True) %}checked{% endif %}>
+      <span>Опубликована в каталоге</span>
+    </label>
+    <label class="checkbox">
+      <input type="checkbox" name="is_featured" value="1"
+             {% if form.get('is_featured', False) %}checked{% endif %}>
+      <span>Показывать в блоке «Топ»</span>
+    </label>
+  </div>
+
+  <div class="row" style="margin-top:24px;gap:12px">
+    <button class="btn btn--primary" type="submit">
+      {{ 'Сохранить изменения' if editing else 'Создать услугу' }}
+    </button>
+    <a class="btn btn--ghost" href="/dashboard/services">Отмена</a>
+    {% if editing %}
+      <span class="spacer"></span>
+      <a class="btn btn--ghost btn--sm" href="/catalog/{{ service.slug }}" target="_blank" rel="noopener">
+        Открыть на сайте ↗
+      </a>
+    {% endif %}
+  </div>
+</form>
+{% endblock %}

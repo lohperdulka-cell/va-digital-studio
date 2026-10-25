@@ -1,0 +1,57 @@
+{% extends "dashboard/base.html" %}
+{% block dash_title %}Поддержка{% endblock %}
+
+{% block dash_content %}
+<div class="dash__head">
+  <h1 class="dash__title">Обращения в поддержку</h1>
+  <span class="dim small">{{ tickets | length }} {{ 'обращение' if tickets | length == 1 else 'обращений' }}</span>
+</div>
+
+<div class="filters">
+  <div class="filters__group">
+    <a class="filter-pill {% if not status %}is-active{% endif %}" href="/dashboard/support">Все</a>
+    <a class="filter-pill {% if status == TicketStatus.OPEN %}is-active{% endif %}"
+       href="/dashboard/support?status=open">Открытые</a>
+    <a class="filter-pill {% if status == TicketStatus.CLOSED %}is-active{% endif %}"
+       href="/dashboard/support?status=closed">Закрытые</a>
+  </div>
+</div>
+
+{% if tickets %}
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>№</th>
+          <th>Отправитель</th>
+          <th>Тема</th>
+          <th>Статус</th>
+          <th>Создано</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ticket in tickets %}
+          <tr>
+            <td class="mono">#{{ ticket.id }}</td>
+            <td>
+              {{ ticket.display_name }}
+              <div class="tiny dim">{{ ticket.email }}</div>
+            </td>
+            <td>{{ ticket.subject }}</td>
+            <td><span class="badge {{ ticket.status.css_class }}">{{ ticket.status.label }}</span></td>
+            <td class="dim small">{{ ticket.created_at | datetime_ru }}</td>
+            <td><a class="btn btn--ghost btn--sm" href="/dashboard/support/{{ ticket.id }}">Открыть</a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <div class="empty">
+    <div class="empty__icon" aria-hidden="true">🎧</div>
+    <h2 class="empty__title">Обращений нет</h2>
+    <p class="empty__text">Здесь появятся заявки из формы «Служба поддержки».</p>
+  </div>
+{% endif %}
+{% endblock %}

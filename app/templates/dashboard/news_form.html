@@ -1,0 +1,76 @@
+{% extends "dashboard/base.html" %}
+{% set editing = item is not none %}
+{% block dash_title %}{{ 'Изменить новость' if editing else 'Новая новость' }}{% endblock %}
+
+{% block crumbs %}
+  <span class="breadcrumbs__sep">/</span>
+  <a href="/dashboard/news">Новости</a>
+  <span class="breadcrumbs__sep">/</span>
+  <span>{{ 'Изменить' if editing else 'Новая' }}</span>
+{% endblock %}
+
+{% block dash_content %}
+<div class="dash__head">
+  <h1 class="dash__title">{{ 'Изменить новость' if editing else 'Новая новость' }}</h1>
+  <a class="btn btn--ghost btn--sm" href="/dashboard/news">← К списку</a>
+</div>
+
+<form method="post" action="/dashboard/news/save" class="card">
+  <input type="hidden" name="{{ csrf_field_name }}" value="{{ csrf_token }}">
+  {% if editing %}<input type="hidden" name="news_id" value="{{ item.id }}">{% endif %}
+
+  <label class="field">
+    <span class="field__label">Заголовок *</span>
+    <input class="input" type="text" name="title" required maxlength="240"
+           value="{{ form.get('title', '') }}" placeholder="Запустили новый сервис">
+  </label>
+
+  <div class="field-grid" style="margin-top:16px">
+    <label class="field">
+      <span class="field__label">Slug (URL)</span>
+      <input class="input" type="text" name="slug" maxlength="160"
+             value="{{ form.get('slug', '') }}" placeholder="new-service-launch">
+      <span class="field__hint">Пусто — соберём из заголовка.</span>
+    </label>
+
+    <label class="field">
+      <span class="field__label">Обложка (эмодзи)</span>
+      <input class="input" type="text" name="cover_emoji" maxlength="8"
+             value="{{ form.get('cover_emoji', '📰') }}">
+    </label>
+  </div>
+
+  <label class="field" style="margin-top:16px">
+    <span class="field__label">Превью</span>
+    <input class="input" type="text" name="preview" maxlength="500"
+           value="{{ form.get('preview', '') }}"
+           placeholder="Короткое описание для карточки на главной">
+  </label>
+
+  <label class="field" style="margin-top:16px">
+    <span class="field__label">Текст новости</span>
+    <textarea class="input" name="body" rows="12"
+              placeholder="Полный текст…">{{ form.get('body', '') }}</textarea>
+    <span class="field__hint">Допустимо простое форматирование: абзацы, списки, ссылки.</span>
+  </label>
+
+  <label class="checkbox" style="margin-top:20px">
+    <input type="checkbox" name="is_published" value="1"
+           {% if form.get('is_published', True) %}checked{% endif %}>
+    <span>Опубликовать</span>
+  </label>
+
+  <div class="row" style="margin-top:24px;gap:12px">
+    <button class="btn btn--primary" type="submit">
+      {{ 'Сохранить изменения' if editing else 'Создать новость' }}
+    </button>
+    <a class="btn btn--ghost" href="/dashboard/news">Отмена</a>
+    {% if editing %}
+      <span class="spacer"></span>
+      <a class="btn btn--ghost btn--sm" href="/news/{{ item.slug }}" target="_blank" rel="noopener">
+        Открыть на сайте ↗
+      </a>
+    {% endif %}
+  </div>
+</form>
+{% endblock %}

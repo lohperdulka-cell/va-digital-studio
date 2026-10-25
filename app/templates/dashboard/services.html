@@ -1,0 +1,66 @@
+{% extends "dashboard/base.html" %}
+{% block dash_title %}Услуги{% endblock %}
+
+{% block dash_content %}
+<div class="dash__head">
+  <h1 class="dash__title">Услуги</h1>
+  <a class="btn btn--primary btn--sm" href="/dashboard/services/new">+ Новая услуга</a>
+</div>
+
+{% if services %}
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Название</th>
+          <th>Категория</th>
+          <th>Цена от</th>
+          <th>Срок</th>
+          <th>Статус</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for service in services %}
+          <tr>
+            <td style="font-size:1.3rem">{{ service.icon }}</td>
+            <td>
+              <a href="/dashboard/services/{{ service.id }}">{{ service.title }}</a>
+              <div class="tiny dim mono">/catalog/{{ service.slug }}</div>
+            </td>
+            <td><span class="badge">{{ service.category.label }}</span></td>
+            <td>{{ service.price_from | money }}</td>
+            <td class="dim small">{{ service.duration_days }} дн.</td>
+            <td>
+              {% if service.is_active %}
+                <span class="badge status-done">Опубликована</span>
+              {% else %}
+                <span class="badge status-draft">Скрыта</span>
+              {% endif %}
+              {% if service.is_featured %}<span class="badge badge--accent">Топ</span>{% endif %}
+            </td>
+            <td>
+              <div class="row" style="gap:8px;flex-wrap:nowrap">
+                <a class="btn btn--ghost btn--sm" href="/dashboard/services/{{ service.id }}">Изменить</a>
+                <form method="post" action="/dashboard/services/{{ service.id }}/delete"
+                      data-confirm="Удалить услугу «{{ service.title }}»?">
+                  <input type="hidden" name="{{ csrf_field_name }}" value="{{ csrf_token }}">
+                  <button class="btn btn--danger btn--sm" type="submit">Удалить</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <div class="empty">
+    <div class="empty__icon" aria-hidden="true">🧩</div>
+    <h2 class="empty__title">Услуг пока нет</h2>
+    <p class="empty__text">Добавьте первую услугу, чтобы она появилась в каталоге.</p>
+    <a class="btn btn--primary" href="/dashboard/services/new">Создать услугу</a>
+  </div>
+{% endif %}
+{% endblock %}

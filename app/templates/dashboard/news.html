@@ -1,0 +1,63 @@
+{% extends "dashboard/base.html" %}
+{% block dash_title %}Новости{% endblock %}
+
+{% block dash_content %}
+<div class="dash__head">
+  <h1 class="dash__title">Новости</h1>
+  <a class="btn btn--primary btn--sm" href="/dashboard/news/new">+ Новая новость</a>
+</div>
+
+{% if news %}
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Заголовок</th>
+          <th>Статус</th>
+          <th>Лайки</th>
+          <th>Дата</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in news %}
+          <tr>
+            <td style="font-size:1.3rem">{{ item.cover_emoji }}</td>
+            <td>
+              <a href="/dashboard/news/{{ item.id }}">{{ item.title }}</a>
+              <div class="tiny dim">{{ item.preview | truncate(90) }}</div>
+            </td>
+            <td>
+              {% if item.is_published %}
+                <span class="badge status-done">Опубликована</span>
+              {% else %}
+                <span class="badge status-draft">Черновик</span>
+              {% endif %}
+            </td>
+            <td class="dim small">❤️ {{ item.likes_count }}</td>
+            <td class="dim small">{{ item.published_at | date_ru }}</td>
+            <td>
+              <div class="row" style="gap:8px;flex-wrap:nowrap">
+                <a class="btn btn--ghost btn--sm" href="/dashboard/news/{{ item.id }}">Изменить</a>
+                <form method="post" action="/dashboard/news/{{ item.id }}/delete"
+                      data-confirm="Удалить новость «{{ item.title }}»?">
+                  <input type="hidden" name="{{ csrf_field_name }}" value="{{ csrf_token }}">
+                  <button class="btn btn--danger btn--sm" type="submit">Удалить</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <div class="empty">
+    <div class="empty__icon" aria-hidden="true">📰</div>
+    <h2 class="empty__title">Новостей пока нет</h2>
+    <p class="empty__text">Опубликуйте первую новость — она появится на главной и в разделе «Новости».</p>
+    <a class="btn btn--primary" href="/dashboard/news/new">Создать новость</a>
+  </div>
+{% endif %}
+{% endblock %}

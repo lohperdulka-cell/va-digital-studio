@@ -1,1 +1,38 @@
-#temp
+{% extends "base.html" %}
+{% block title %}{% block dash_title %}Дашборд{% endblock %} · {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+  <nav class="breadcrumbs" aria-label="Навигация">
+    <a href="/">Главная</a>
+    <span class="breadcrumbs__sep">/</span>
+    <a href="/dashboard">Дашборд</a>
+    {% block crumbs %}{% endblock %}
+  </nav>
+
+  <div class="dash">
+    <nav class="dash__nav" aria-label="Разделы дашборда">
+      {% set sections = [
+        ('/dashboard', 'Обзор', '📊', none),
+        ('/dashboard/orders', 'Заказы', '📦', nav_orders_unread),
+        ('/dashboard/chats', 'Чаты', '💬', nav_chats_unread),
+        ('/dashboard/support', 'Поддержка', '🎧', nav_tickets_open),
+        ('/dashboard/services', 'Услуги', '🧩', none),
+        ('/dashboard/news', 'Новости', '📰', none)
+      ] %}
+      {% for href, label, icon, count in sections %}
+        <a class="dash__link {% if path == href or (href != '/dashboard' and path.startswith(href)) %}is-active{% endif %}"
+           href="{{ href }}">
+          <span aria-hidden="true">{{ icon }}</span>
+          <span>{{ label }}</span>
+          {% if count %}<span class="dash__count">{{ count }}</span>{% endif %}
+        </a>
+      {% endfor %}
+    </nav>
+
+    <div>
+      {% block dash_content %}{% endblock %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,63 @@
+{% extends "dashboard/base.html" %}
+{% block dash_title %}Чаты{% endblock %}
+
+{% block dash_content %}
+<div class="dash__head">
+  <h1 class="dash__title">Чаты по заказам</h1>
+  <span class="dim small">{{ conversations | length }} {{ 'диалог' if conversations | length == 1 else 'диалогов' }}</span>
+</div>
+
+{% if conversations %}
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Заказ</th>
+          <th>Клиент</th>
+          <th>Последнее сообщение</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for order in conversations %}
+          <tr>
+            <td>
+              <a href="/dashboard/orders/{{ order.id }}">#{{ order.id }} · {{ order.title }}</a>
+              <div class="tiny dim">{{ order.service_title }}</div>
+            </td>
+            <td>
+              {{ order.user.display_name if order.user else '—' }}
+              <div class="tiny dim">{{ order.user.email if order.user else '' }}</div>
+            </td>
+            <td>
+              {% set preview = previews.get(order.id) %}
+              {% if preview %}
+                <div class="chat-preview">{{ preview.text | truncate(90) }}</div>
+                <div class="tiny dim">{{ preview.created_at | datetime_ru }}</div>
+              {% else %}
+                —
+              {% endif %}
+            </td>
+            <td>
+              <div class="row" style="gap:8px;flex-wrap:nowrap;align-items:center">
+                {% if unread.get(order.id) %}
+                  <span class="dash__count">{{ unread[order.id] }}</span>
+                {% endif %}
+                <a class="btn btn--cyan btn--sm" href="/chat/{{ order.id }}">Открыть чат</a>
+              </div>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <div class="empty">
+    <div class="empty__icon" aria-hidden="true">💬</div>
+    <h2 class="empty__title">Диалогов пока нет</h2>
+    <p class="empty__text">
+      Как только клиент напишет в чат по заказу, диалог появится здесь.
+    </p>
+  </div>
+{% endif %}
+{% endblock %}
