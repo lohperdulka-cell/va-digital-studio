@@ -1,0 +1,59 @@
+{# Slide-in navigation for narrow screens. #}
+<div class="drawer-backdrop" data-drawer-backdrop hidden></div>
+
+<aside class="drawer" id="mobile-drawer" data-drawer role="dialog" aria-modal="true"
+       aria-label="Меню навигации" hidden>
+  <div class="drawer__head">
+    <a class="logo" href="/">
+      <span class="logo__mark" aria-hidden="true">VA</span>
+      <span class="logo__text">Digital Studio</span>
+    </a>
+    <button type="button" class="modal__close" data-drawer-close aria-label="Закрыть меню">&times;</button>
+  </div>
+
+  {% if current_user %}
+    <div class="drawer__user">
+      <span class="avatar">
+        {% if current_user.avatar_url %}
+          <img src="{{ current_user.avatar_url }}" alt="" width="32" height="32" referrerpolicy="no-referrer">
+        {% else %}
+          {{ current_user.initials }}
+        {% endif %}
+      </span>
+      <div style="min-width:0">
+        <div><strong>{{ current_user.display_name }}</strong></div>
+        <div class="tiny dim" style="overflow:hidden;text-overflow:ellipsis">{{ current_user.email }}</div>
+      </div>
+    </div>
+  {% endif %}
+
+  <a class="drawer__link {% if path == '/' %}is-active{% endif %}" href="/">🏠 Главная</a>
+  <a class="drawer__link {% if path.startswith('/catalog') %}is-active{% endif %}" href="/catalog">🧩 Каталог услуг</a>
+  <a class="drawer__link {% if path.startswith('/news') %}is-active{% endif %}" href="/news">📰 Новости</a>
+  <a class="drawer__link {% if path == '/about' %}is-active{% endif %}" href="/about">✨ О студии</a>
+
+  <div class="drawer__divider"></div>
+
+  {% if current_user %}
+    <a class="drawer__link {% if path == '/profile' %}is-active{% endif %}" href="/profile">👤 Профиль</a>
+    <a class="drawer__link" href="/profile/orders">📦 Мои заказы</a>
+    {% if is_admin %}
+      <a class="drawer__link {% if path.startswith('/dashboard') %}is-active{% endif %}" href="/dashboard">🛠 Дашборд</a>
+    {% endif %}
+  {% else %}
+    <a class="drawer__link" href="/auth/login?next={{ next_url | urlencode }}">🔑 Войти через Google</a>
+  {% endif %}
+
+  <div class="drawer__divider"></div>
+
+  <button type="button" class="btn btn--cyan btn--block" data-support-open>
+    💬 Служба поддержки
+  </button>
+
+  {% if current_user %}
+    <form method="post" action="/auth/logout" style="margin-top:12px">
+      <input type="hidden" name="{{ csrf_field_name }}" value="{{ csrf_token }}">
+      <button type="submit" class="btn btn--ghost btn--block">🚪 Выйти</button>
+    </form>
+  {% endif %}
+</aside>

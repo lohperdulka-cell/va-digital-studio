@@ -1,0 +1,28 @@
+{# One news card with an AJAX like button. Shared by the home page and /news. #}
+<article class="card card--hover news-card" data-news-id="{{ item.id }}">
+  <div class="news-card__cover" aria-hidden="true">{{ item.cover_emoji }}</div>
+
+  <div class="card__header">
+    <span class="badge">{{ item.published_at | date_ru }}</span>
+  </div>
+
+  <h3 class="card__title">
+    <a href="/news/{{ item.slug }}">{{ item.title }}</a>
+  </h3>
+  <p class="card__body news-card__preview">{{ item.preview }}</p>
+
+  <div class="card__footer">
+    <button type="button"
+            class="like-btn {% if item.liked_by(current_user.id if current_user else none) %}is-liked{% endif %}"
+            data-like-button
+            data-news-id="{{ item.id }}"
+            data-liked="{{ 'true' if item.liked_by(current_user.id if current_user else none) else 'false' }}"
+            aria-pressed="{{ 'true' if item.liked_by(current_user.id if current_user else none) else 'false' }}"
+            aria-label="Поставить лайк">
+      <span class="like-btn__icon" aria-hidden="true">♥</span>
+      <span data-like-count>{{ item.likes_count }}</span>
+    </button>
+
+    <a class="btn btn--ghost btn--sm" href="/news/{{ item.slug }}">Читать</a>
+  </div>
+</article>
