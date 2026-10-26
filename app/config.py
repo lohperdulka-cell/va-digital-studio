@@ -46,7 +46,10 @@ class Settings(BaseSettings):
 
     # --- Database ----------------------------------------------------------
     database_url: str = ""
-    sqlite_path: str = "./va_studio.db"
+    # Kept inside ./data so the SQLite fallback lands in the directory the
+    # Dockerfile makes writable for the unprivileged runtime user.  The
+    # application root itself stays read-only in the image.
+    sqlite_path: str = "./data/va_studio.db"
     db_pool_size: int = 5
     db_max_overflow: int = 10
     # Cloud proxies drop idle connections; recycle well before that happens.
