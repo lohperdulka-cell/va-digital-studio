@@ -4,21 +4,33 @@ from __future__ import annotations
 
 from collections.abc import Generator, Iterator
 from contextlib import contextmanager
+from pathlib import Path
 
 from sqlalchemy import create_engine, event
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
-from app.config import settings
+from app.config import BASE_DIR, settings
 
 
 class Base(DeclarativeBase):
     """Declarative base for every ORM model."""
 
 
+def _sqlite_file_parent() -> Path:
+    """Directory holding the SQLite file, resolved the same way config does."""
+    path = Path(settings.sqlite_path)
+    if not path.is_absolute():
+        path = (BASE_DIR / path).resolve()
+    return path.parent
+
+
 def _build_engine() -> Engine:
     url = settings.sqlalchemy_url
     if settings.is_sqlite:
+        # The file lives in ./data by default, which a fresh checkout does not
+        # have; create it so the SQLite fallback works without a manual step.
+        _sqlite_file_parent().mkdir(parents=True, exist_ok=True)
         engine = create_engine(
             url,
             # SQLite only: FastAPI serves requests from a thread pool.
