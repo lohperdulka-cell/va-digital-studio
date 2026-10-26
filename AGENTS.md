@@ -83,16 +83,16 @@ Sent from `app/services/mailer.py` over one of two transports.
 - SMTP remains for paid plans and local work; it is ignored when
   `EMAIL_API_PROVIDER` is set.
 - **Unconfigured mail means no e-mail, not a silent log.** In production
-  `_deliver` returns `False` and logs the recipient only; the code is never
+  `_deliver` returns `False` and logs the recipient only; the body is never
   written to the deploy log. Development still logs the body so a developer can
-  read the code. `tests/test_mailer.py` guards both.
-- **Never log the subject or body of a message.** `send_login_code` puts the
-  code in the subject (`Код для входа: 123456`), so logging it leaks the code.
+  read it. `tests/test_mailer.py` guards both.
+- **Never log the subject or body of a message.** Support replies carry
+  private text; logging them would leak it.
 - `settings.email_configured` is true when an HTTP API is configured, or when
   SMTP has host + sender and (if a username is set) a password.
-- The UI is honest about this: `/auth/login` hides the code button, and
-  `/auth/code` explains the problem instead of claiming a message was sent
-  (`_EMAIL_UNAVAILABLE` in `app/routes/login.py`).
+- Mail is only used for support replies now. E-mail-code sign-in was removed
+  because Render's free plan makes outbound mail unreliable; sign-in is
+  e-mail+password, Google, or Telegram (`app/routes/login.py`).
 
 ## Git
 

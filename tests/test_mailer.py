@@ -1,8 +1,7 @@
-"""Tests for the outbound mailer's unconfigured-SMTP fallback.
+"""Tests for the outbound mailer's unconfigured-transport fallback.
 
-The rule under test: without SMTP, development logs the message (so a
-developer can read the code) while production refuses and never writes the
-code to the deploy log.
+The rule under test: with no transport at all, development logs the message
+(so a developer can see it) while production refuses to pretend it was sent.
 """
 
 from __future__ import annotations
@@ -15,6 +14,17 @@ from app.config import settings
 from app.services import mailer
 
 CODE = "999888"
+BODY = "Здравствуйте! Мы ответили на ваше обращение."
+
+
+def _send(_monkeypatch=None) -> bool:
+    """Send a support reply — the mailer path that still exists."""
+    return mailer.send_support_reply(
+        to_email="user@example.com",
+        subject="Ответ по заявке",
+        body=BODY,
+        ticket_id=7,
+    )
 
 
 def _unconfigure_mail(monkeypatch, env: str) -> None:
@@ -27,25 +37,25 @@ def _unconfigure_mail(monkeypatch, env: str) -> None:
     monkeypatch.setattr(settings, "email_api_key", "")
 
 
-def test_production_does_not_leak_the_code_into_logs(monkeypatch, caplog):
+def test_production_does_not_leak_the_body_into_logs(monkeypatch, caplog):
     _unconfigure_mail(monkeypatch, "production")
 
     with caplog.at_level(logging.INFO):
-        delivered = mailer.send_login_code(to_email="user@example.com", code=CODE)
+        delivered = _send(monkeypatch)
 
     assert delivered is False
-    assert CODE not in caplog.text
+    assert BODY not in caplog.text
     assert "not sent" in caplog.text
 
 
-def test_development_logs_the_code_for_debugging(monkeypatch, caplog):
+def test_development_logs_the_body_for_debugging(monkeypatch, caplog):
     _unconfigure_mail(monkeypatch, "development")
 
     with caplog.at_level(logging.INFO):
-        delivered = mailer.send_login_code(to_email="user@example.com", code=CODE)
+        delivered = _send(monkeypatch)
 
     assert delivered is True
-    assert CODE in caplog.text
+    assert BODY in caplog.text
 
 
 def test_a_user_without_a_password_is_treated_as_unconfigured(monkeypatch):
@@ -103,14 +113,14 @@ def test_api_transport_is_used_when_configured(monkeypatch):
     _FakeClient.calls = []
     monkeypatch.setattr(mailer.httpx, "Client", _FakeClient)
 
-    delivered = mailer.send_login_code(to_email="user@example.com", code=CODE)
+    delivered = _send(monkeypatch)
 
     assert delivered is True
     url, headers, payload = _FakeClient.calls[0]
     assert url == "https://api.resend.com/emails"
     assert headers["Authorization"] == "Bearer key-123"
     assert payload["to"] == ["user@example.com"]
-    assert CODE in payload["subject"]
+    assert "Обращение #7" in payload["subject"]
 
 
 def test_brevo_api_shape(monkeypatch):
@@ -120,7 +130,7 @@ def test_brevo_api_shape(monkeypatch):
     _FakeClient.calls = []
     monkeypatch.setattr(mailer.httpx, "Client", _FakeClient)
 
-    assert mailer.send_login_code(to_email="user@example.com", code=CODE) is True
+    assert _send(monkeypatch) is True
 
     url, headers, payload = _FakeClient.calls[0]
     assert url == "https://api.brevo.com/v3/smtp/email"
@@ -138,7 +148,7 @@ def test_api_failure_is_reported_not_raised(monkeypatch):
     monkeypatch.setattr(mailer.httpx, "Client", _FakeClient)
 
     try:
-        assert mailer.send_login_code(to_email="user@example.com", code=CODE) is False
+        assert _send(monkeypatch) is False
     finally:
         _FakeClient.status_code = 200
 
@@ -149,7 +159,7 @@ def test_unknown_api_provider_fails_cleanly(monkeypatch, caplog):
     monkeypatch.setattr(settings, "email_api_key", "key-789")
 
     with caplog.at_level(logging.INFO):
-        delivered = mailer.send_login_code(to_email="user@example.com", code=CODE)
+        delivered = _send(monkeypatch)
 
     assert delivered is False
     assert CODE not in caplog.text

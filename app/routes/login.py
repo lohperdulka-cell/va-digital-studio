@@ -1,4 +1,4 @@
-"""Email, one-time-code and Telegram sign-in.
+"""Email+password and Telegram sign-in.
 
 Kept apart from :mod:`app.routes.auth` (which owns the Google OAuth dance and
 logout) so each entry path stays small and readable.
@@ -9,9 +9,6 @@ Route map::
     POST /auth/login          password sign-in
     GET  /auth/register       registration form
     POST /auth/register       create an email+password account
-    GET  /auth/code           ask for a one-time code by e-mail
-    POST /auth/code           send the code
-    POST /auth/code/verify    redeem the code
     GET  /auth/telegram       Telegram sign-in page (deep link to the bot)
     POST /auth/telegram       send a code into the Telegram chat
     POST /auth/telegram/verify  redeem the Telegram code
@@ -30,7 +27,6 @@ from app.config import settings
 from app.errors import AppError
 from app.logging_config import get_logger
 from app.schemas.auth import (
-    CodeRequestForm,
     CodeVerifyForm,
     LoginForm,
     RegisterForm,
@@ -49,17 +45,6 @@ from app.templating import render
 
 router = APIRouter(prefix="/auth", tags=["login"], dependencies=[Depends(require_csrf)])
 logger = get_logger(__name__)
-
-# How long a "we sent you a code" notice stays valid, in the cookie.
-_PENDING_TTL_SECONDS = 600
-_PENDING_COOKIE = "va_login_pending"
-
-# Shown when SMTP is unconfigured, so the page never claims to have sent a code
-# it could not deliver.
-_EMAIL_UNAVAILABLE = (
-    "Вход по коду недоступен: отправка писем на этом сайте не настроена. "
-    "Войдите с паролем или через Google."
-)
 
 
 class LoginError(AppError):
@@ -100,8 +85,6 @@ def _render_login(
             "field_errors": field_errors or {},
             "values": values or {},
             "google_enabled": settings.oauth_configured,
-            "email_enabled": settings.email_configured,
-            "code_available": settings.email_configured,
             "telegram_enabled": settings.telegram_configured,
             "next_url": _next_from(request),
         },
@@ -228,144 +211,6 @@ def register_submit(
     response = RedirectResponse(safe_next_path(_next_from(request)), status_code=303)
     issue_session(response, user)
     logger.info("Registration login: user_id=%s", user.id)
-    return response
-
-
-# --- One-time code by e-mail ----------------------------------------------
-
-
-@router.get("/code")
-def code_page(request: Request) -> Response:
-    """Ask for the e-mail to send a code to."""
-    return render(
-        request,
-        "login_code.html",
-        {
-            "stage": "request",
-            "errors": [] if settings.email_configured else [_EMAIL_UNAVAILABLE],
-            "field_errors": {},
-            "values": {},
-            "email_enabled": settings.email_configured,
-            "next_url": _next_from(request),
-        },
-    )
-
-
-@router.post("/code")
-def code_send(
-    request: Request,
-    db: DbSession,
-    email: str = Form(default=""),
-    next: str = Form(default=""),
-) -> Response:
-    if not settings.email_configured:
-        return render(
-            request,
-            "login_code.html",
-            {
-                "stage": "request",
-                "errors": [_EMAIL_UNAVAILABLE],
-                "field_errors": {},
-                "values": {"email": email},
-                "email_enabled": False,
-                "next_url": _next_from(request),
-            },
-            status_code=503,
-        )
-
-    try:
-        form = CodeRequestForm(email=email)
-    except ValidationError as exc:
-        return render(
-            request,
-            "login_code.html",
-            {
-                "stage": "request",
-                "errors": [],
-                "field_errors": _form_values(exc),
-                "values": {"email": email},
-                "email_enabled": True,
-                "next_url": _next_from(request),
-            },
-            status_code=400,
-        )
-
-    code = login_codes.issue_code(db, email=form.email)
-    delivered = _send_code_email(form.email, code)
-
-    response = render(
-        request,
-        "login_code.html",
-        {
-            "stage": "verify",
-            "errors": [] if delivered else [_EMAIL_UNAVAILABLE],
-            "field_errors": {},
-            "values": {"email": form.email},
-            "sent_to": form.email,
-            "email_enabled": delivered,
-            "next_url": safe_next_path(next or _next_from(request)),
-        },
-    )
-    _remember_pending(response, form.email)
-    return response
-
-
-@router.post("/code/verify")
-def code_verify(
-    request: Request,
-    db: DbSession,
-    email: str = Form(default=""),
-    code: str = Form(default=""),
-    next: str = Form(default=""),
-) -> Response:
-    try:
-        form = CodeVerifyForm(email=email, code=code)
-    except ValidationError as exc:
-        return render(
-            request,
-            "login_code.html",
-            {
-                "stage": "verify",
-                "errors": [],
-                "field_errors": _form_values(exc),
-                "values": {"email": email},
-                "sent_to": email,
-                "email_enabled": True,
-                "next_url": _next_from(request),
-            },
-            status_code=400,
-        )
-
-    try:
-        login_codes.redeem_code(
-            db,
-            email=form.email,
-            code=form.code,
-            channel=login_codes.CHANNEL_EMAIL,
-        )
-    except CodeError as exc:
-        return render(
-            request,
-            "login_code.html",
-            {
-                "stage": "verify",
-                "errors": [str(exc)],
-                "field_errors": {},
-                "values": {"email": form.email},
-                "sent_to": form.email,
-                "email_enabled": True,
-                "next_url": _next_from(request),
-            },
-            status_code=400,
-        )
-
-    user, _created = account_service.upsert_by_email_code(db, email=form.email)
-    response = RedirectResponse(
-        safe_next_path(next or _next_from(request)), status_code=303
-    )
-    issue_session(response, user)
-    _clear_pending(response)
-    logger.info("Email-code login: user_id=%s", user.id)
     return response
 
 
@@ -524,38 +369,3 @@ def telegram_verify(
     issue_session(response, user)
     logger.info("Telegram login: user_id=%s", user.id)
     return response
-
-
-# --- Helpers ---------------------------------------------------------------
-
-
-def _send_code_email(email: str, code: str) -> bool:
-    """Send the code without letting an SMTP problem break the request.
-
-    Returns whether the message was handed to the mailer successfully.  The
-    sign-in code is still valid either way — the caller only uses this to tell
-    the visitor the truth about whether an e-mail went out.
-    """
-    from app.services import mailer
-
-    try:
-        return mailer.send_login_code(to_email=email, code=code)
-    except Exception:  # pragma: no cover - defensive
-        logger.exception("Could not send the login code e-mail to %s", email)
-        return False
-
-
-def _remember_pending(response: Response, email: str) -> None:
-    response.set_cookie(
-        key=_PENDING_COOKIE,
-        value=email,
-        httponly=True,
-        secure=settings.cookie_secure,
-        samesite="lax",
-        path="/",
-        max_age=_PENDING_TTL_SECONDS,
-    )
-
-
-def _clear_pending(response: Response) -> None:
-    response.delete_cookie(key=_PENDING_COOKIE, path="/", samesite="lax")

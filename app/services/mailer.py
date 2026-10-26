@@ -141,24 +141,6 @@ def _deliver(*, to_email: str, subject: str, body: str) -> bool:
         return False
 
 
-def _login_code_body(code: str) -> str:
-    minutes = max(1, settings.login_code_ttl_seconds // 60)
-    return (
-        f"Ваш код для входа в {settings.app_name}: {code}\n\n"
-        f"Код действует {minutes} мин. "
-        "Если вы не запрашивали вход, просто проигнорируйте это письмо."
-    )
-
-
-def send_login_code(*, to_email: str, code: str) -> bool:
-    """Send the six-digit sign-in code and wait for the result."""
-    return _deliver(
-        to_email=to_email,
-        subject=f"Код для входа: {code}",
-        body=_login_code_body(code),
-    )
-
-
 def send_support_reply(
     *, to_email: str, subject: str, body: str, ticket_id: int
 ) -> bool:
@@ -167,16 +149,4 @@ def send_support_reply(
         to_email=to_email,
         subject=f"[Обращение #{ticket_id}] {subject}",
         body=body,
-    )
-
-
-def send_ticket_ack(*, to_email: str, subject: str, ticket_id: int) -> bool:
-    """Acknowledge receipt of a new ticket."""
-    return _deliver(
-        to_email=to_email,
-        subject=f"[Обращение #{ticket_id}] принято в работу",
-        body=(
-            "Спасибо за обращение! Мы получили ваш запрос и ответим "
-            "в течение одного рабочего дня."
-        ),
     )

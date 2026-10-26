@@ -2,7 +2,7 @@
 {% from "partials/auth_fields.html" import text_input, error_summary, google_button, divider %}
 
 {% block title %}Вход — {{ app_name }}{% endblock %}
-{% block description %}Войдите в личный кабинет VA Digital Studio: e-mail и пароль, код на почту, Telegram или Google.{% endblock %}
+{% block description %}Войдите в личный кабинет VA Digital Studio: e-mail и пароль, Telegram или Google.{% endblock %}
 {% block main_class %}page auth-page{% endblock %}
 
 {% block content %}
@@ -10,11 +10,7 @@
   <div class="auth__card">
     <h1 class="auth__title">Вход в аккаунт</h1>
     <p class="auth__lead">
-      {% if email_enabled %}
-        E-mail и пароль — основной способ. Ниже можно войти по коду, через Telegram или Google.
-      {% else %}
-        E-mail и пароль — основной способ. Ниже можно войти через Telegram или Google.
-      {% endif %}
+      E-mail и пароль — основной способ. Ниже можно войти через Telegram или Google.
     </p>
 
     {{ error_summary(errors) }}
@@ -40,11 +36,6 @@
     {{ divider() }}
 
     <div class="auth__methods">
-      {% if email_enabled %}
-        <a class="btn btn--ghost btn--block" href="/auth/code?next={{ next_url | urlencode }}">
-          ✉️ Войти по коду на почту
-        </a>
-      {% endif %}
       {% if telegram_enabled %}
         <a class="btn btn--ghost btn--block" href="/auth/telegram?next={{ next_url | urlencode }}">
           ✈️ Войти через Telegram
@@ -54,12 +45,6 @@
         {{ google_button(next_url) }}
       {% endif %}
     </div>
-
-    {% if email_enabled %}
-      <p class="tiny dim auth__note">
-        Вход по коду не требует пароля: мы отправим 6-значный код, он действует 10 минут.
-      </p>
-    {% endif %}
   </div>
 </section>
 {% endblock %}

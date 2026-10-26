@@ -99,12 +99,6 @@ class RegisterForm(_Base):
         return self
 
 
-class CodeRequestForm(_Base):
-    email: EmailStr
-
-    _normalise_email = field_validator("email")(_lowercase_email)
-
-
 class CodeVerifyForm(_Base):
     email: EmailStr
     # Length is enforced by the validator below so a short code gets the

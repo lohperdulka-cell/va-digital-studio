@@ -90,24 +90,6 @@ def client() -> Iterator[TestClient]:
 
 
 @pytest.fixture
-def smtp_configured(monkeypatch):
-    """Make the app believe SMTP is set up, without touching the network.
-
-    The behaviour under test is the route's honest-flag logic, so only the
-    final SMTP hop is replaced; the configuration checks, the mailer and the
-    templates all run for real.
-    """
-    from app.config import settings
-    from app.services import mailer
-
-    monkeypatch.setattr(settings, "email_host", "smtp.example.com")
-    monkeypatch.setattr(settings, "email_user", "studio@example.com")
-    monkeypatch.setattr(settings, "email_password", "app-password")
-    monkeypatch.setattr(mailer, "_deliver", lambda **_kwargs: True)
-    return mailer
-
-
-@pytest.fixture
 def make_user(db: Session):
     """Factory creating a persisted user with an optional admin flag."""
 

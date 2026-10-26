@@ -238,129 +238,6 @@ def test_register_with_password_raises_on_taken_email(db):
         register_with_password(db, email=EMAIL, password=PASSWORD)
 
 
-# --- One-time e-mail code --------------------------------------------------
-
-
-def test_code_request_is_refused_when_email_is_unconfigured(client):
-    """No SMTP: the page says so instead of claiming a code was sent."""
-    token = _csrf(client)
-    response = client.post(
-        "/auth/code",
-        data={"email": EMAIL, "csrf_token": token},
-        follow_redirects=False,
-    )
-    assert response.status_code == 503
-    assert "не настроена" in response.text
-    assert "Мы отправили" not in response.text
-
-
-def test_code_page_is_honest_when_email_is_unconfigured(client):
-    response = client.get("/auth/code")
-    assert response.status_code == 200
-    assert "не настроена" in response.text
-
-
-def test_code_request_shows_verify_stage(smtp_configured, client):
-    token = _csrf(client)
-    response = client.post(
-        "/auth/code",
-        data={"email": EMAIL, "csrf_token": token},
-        follow_redirects=False,
-    )
-    assert response.status_code == 200
-    assert "Введите код" in response.text
-    assert EMAIL in response.text
-
-
-def test_login_page_hides_code_button_when_email_is_unconfigured(client):
-    response = client.get("/auth/login")
-    assert response.status_code == 200
-    assert "Войти по коду на почту" not in response.text
-
-
-def test_login_page_shows_code_button_when_email_is_configured(smtp_configured, client):
-    response = client.get("/auth/login")
-    assert response.status_code == 200
-    assert "Войти по коду на почту" in response.text
-
-
-def test_code_login_creates_account_and_signs_in(smtp_configured, client, db):
-    token = _csrf(client)
-    client.post("/auth/code", data={"email": EMAIL, "csrf_token": token})
-    code = login_codes.issue_code(db, email=EMAIL)
-
-    response = client.post(
-        "/auth/code/verify",
-        data={"email": EMAIL, "code": code, "csrf_token": token},
-        follow_redirects=False,
-    )
-    assert response.status_code == 303
-    assert SESSION_COOKIE_NAME in response.headers.get("set-cookie", "")
-    user = db.scalar(select(User).where(User.email == EMAIL))
-    assert user is not None
-
-
-def test_code_is_single_use(client, db):
-    token = _csrf(client)
-    code = login_codes.issue_code(db, email=EMAIL)
-    first = client.post(
-        "/auth/code/verify",
-        data={"email": EMAIL, "code": code, "csrf_token": token},
-        follow_redirects=False,
-    )
-    assert first.status_code == 303
-
-    replay = client.post(
-        "/auth/code/verify",
-        data={"email": EMAIL, "code": code, "csrf_token": token},
-        follow_redirects=False,
-    )
-    assert replay.status_code == 400
-    assert "не найден или уже использован" in replay.text
-
-
-def test_wrong_code_is_rejected(client, db):
-    token = _csrf(client)
-    login_codes.issue_code(db, email=EMAIL)
-    response = client.post(
-        "/auth/code/verify",
-        data={"email": EMAIL, "code": "000000", "csrf_token": token},
-        follow_redirects=False,
-    )
-    assert response.status_code == 400
-    assert "Неверный код" in response.text
-
-
-def test_code_attempt_limit_locks_out(client, db):
-    token = _csrf(client)
-    login_codes.issue_code(db, email=EMAIL)
-    for _ in range(5):
-        client.post(
-            "/auth/code/verify",
-            data={"email": EMAIL, "code": "000000", "csrf_token": token},
-            follow_redirects=False,
-        )
-    response = client.post(
-        "/auth/code/verify",
-        data={"email": EMAIL, "code": "000000", "csrf_token": token},
-        follow_redirects=False,
-    )
-    assert response.status_code == 400
-    assert "Слишком много" in response.text
-
-
-def test_code_must_be_six_digits(client, db):
-    token = _csrf(client)
-    login_codes.issue_code(db, email=EMAIL)
-    response = client.post(
-        "/auth/code/verify",
-        data={"email": EMAIL, "code": "abc", "csrf_token": token},
-        follow_redirects=False,
-    )
-    assert response.status_code == 400
-    assert "6 цифр" in response.text
-
-
 # --- Telegram --------------------------------------------------------------
 
 
@@ -395,17 +272,27 @@ def test_telegram_flow_when_configured(monkeypatch, client, db):
     assert SESSION_COOKIE_NAME in verified.headers.get("set-cookie", "")
 
 
-def test_telegram_code_is_not_valid_on_the_email_endpoint(client, db):
+def test_telegram_code_is_not_valid_on_the_telegram_endpoint_after_use(
+    client, db
+):
+    """A Telegram code is single-use: replaying it must be rejected."""
     token = _csrf(client)
     code = login_codes.issue_code(
         db, email=EMAIL, channel=login_codes.CHANNEL_TELEGRAM
     )
-    response = client.post(
-        "/auth/code/verify",
+    first = client.post(
+        "/auth/telegram/verify",
         data={"email": EMAIL, "code": code, "csrf_token": token},
         follow_redirects=False,
     )
-    assert response.status_code == 400
+    assert first.status_code == 303
+
+    replay = client.post(
+        "/auth/telegram/verify",
+        data={"email": EMAIL, "code": code, "csrf_token": token},
+        follow_redirects=False,
+    )
+    assert replay.status_code == 400
 
 
 def test_start_payload_round_trips_the_email():
@@ -434,4 +321,3 @@ def test_auth_paths_are_rate_limited():
 
     assert _is_guarded("/auth/login")
     assert _is_guarded("/auth/register")
-    assert _is_guarded("/auth/code/verify")
