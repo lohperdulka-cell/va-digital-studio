@@ -376,10 +376,19 @@ def seed_reviews(db: Session) -> int:
 
 
 def promote_admins(db: Session) -> int:
-    """Promote any existing user whose e-mail is in ADMIN_EMAILS."""
+    """Sync ``is_admin`` with ``ADMIN_EMAILS``; fall back to an owner account.
+
+    ``ADMIN_EMAILS`` is authoritative: an address on the list is an admin, one
+    that is not is demoted.  When the list is empty the oldest account owns the
+    dashboard instead, because a card-free host has no Shell to run
+    ``python -m app.cli make_admin`` in and the dashboard would otherwise be
+    unreachable for everyone.
+    """
     wanted = set(settings.admin_email_list)
+
     if not wanted:
-        return 0
+        return _promote_owner_account(db)
+
     changed = 0
     for user in db.scalars(select(User)):
         should_be_admin = user.email in wanted
@@ -388,6 +397,28 @@ def promote_admins(db: Session) -> int:
             changed += 1
     db.commit()
     return changed
+
+
+def _promote_owner_account(db: Session) -> int:
+    """Make the oldest account the owner when no ``ADMIN_EMAILS`` is set.
+
+    Nothing happens once an administrator exists, so a later registration can
+    never take the flag away from the owner.
+    """
+    has_admin = db.scalar(
+        select(func.count()).select_from(User).where(User.is_admin.is_(True))
+    )
+    if has_admin:
+        return 0
+
+    owner = db.scalar(select(User).order_by(User.id).limit(1))
+    if owner is None:
+        return 0
+
+    owner.is_admin = True
+    db.commit()
+    logger.info("No ADMIN_EMAILS set: promoted the owner account (%s)", owner.email)
+    return 1
 
 
 def reset_content(db: Session) -> None:

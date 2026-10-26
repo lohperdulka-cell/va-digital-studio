@@ -10,16 +10,18 @@ from decimal import Decimal
 
 from sqlalchemy import select
 
+from app.config import settings
 from app.models import Case, News, Review, Service
 from app.models.enums import ServiceCategory
 from app.seed import (
     bootstrap,
+    promote_admins,
     seed_cases,
     seed_news,
     seed_reviews,
     seed_services,
 )
-from app.services.accounts import upsert_user
+from app.services.accounts import register_with_password, upsert_user
 
 
 def _profile(email: str) -> dict[str, str | None]:
@@ -182,3 +184,86 @@ def test_middleware_does_not_promote_a_regular_user(client, db, make_user, login
     assert response.status_code == 403
     db.refresh(user)
     assert user.is_admin is False
+
+
+# --- Owner fallback when ADMIN_EMAILS is unset -------------------------------
+
+
+def test_first_account_becomes_owner_without_admin_emails(db, monkeypatch):
+    """A card-free host has no Shell: the first account must own the site.
+
+    ``ADMIN_EMAILS`` is empty here on purpose — this is the deployed state that
+    left the dashboard unreachable.
+    """
+    monkeypatch.setattr(settings, "admin_emails", "")
+
+    owner = register_with_password(
+        db, email="owner@example.com", password="secret123", username="owner"
+    )
+
+    assert owner.is_admin is True
+
+
+def test_a_later_account_does_not_become_owner(db, monkeypatch):
+    """Only the first account gets the fallback; the second stays a visitor."""
+    monkeypatch.setattr(settings, "admin_emails", "")
+
+    register_with_password(
+        db, email="owner@example.com", password="secret123", username="owner"
+    )
+    visitor = register_with_password(
+        db, email="visitor@example.com", password="secret123", username="visitor"
+    )
+
+    assert visitor.is_admin is False
+
+
+def test_existing_owner_is_promoted_by_bootstrap(db, monkeypatch):
+    """An account created before the fallback existed gains access on deploy."""
+    monkeypatch.setattr(settings, "admin_emails", "")
+    from app.models import User
+
+    db.add(User(email="first@example.com", name="Первый"))
+    db.add(User(email="second@example.com", name="Второй"))
+    db.commit()
+
+    changed = promote_admins(db)
+
+    assert changed == 1
+    first = db.scalar(select(User).where(User.email == "first@example.com"))
+    second = db.scalar(select(User).where(User.email == "second@example.com"))
+    assert first.is_admin is True
+    assert second.is_admin is False
+
+
+def test_admin_emails_still_wins_over_the_fallback(db, monkeypatch):
+    """An explicit list is authoritative: it is not the oldest account that wins."""
+    monkeypatch.setattr(settings, "admin_emails", "boss@example.com")
+    from app.models import User
+
+    db.add(User(email="oldest@example.com", name="Старейший"))
+    db.commit()
+
+    promote_admins(db)
+
+    oldest = db.scalar(select(User).where(User.email == "oldest@example.com"))
+    boss = db.scalar(select(User).where(User.email == "boss@example.com"))
+    assert boss is None or boss.is_admin is False
+    assert oldest.is_admin is False
+
+
+def test_owner_fallback_does_not_override_a_listed_admin(db, monkeypatch):
+    """With a list set, membership decides — the oldest account is not special."""
+    monkeypatch.setattr(settings, "admin_emails", "boss@example.com")
+    from app.models import User
+
+    db.add(User(email="oldest@example.com", name="Старейший"))
+    db.add(User(email="boss@example.com", name="Босс"))
+    db.commit()
+
+    promote_admins(db)
+
+    oldest = db.scalar(select(User).where(User.email == "oldest@example.com"))
+    boss = db.scalar(select(User).where(User.email == "boss@example.com"))
+    assert boss.is_admin is True
+    assert oldest.is_admin is False

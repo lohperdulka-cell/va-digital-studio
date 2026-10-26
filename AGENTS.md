@@ -94,6 +94,19 @@ Sent from `app/services/mailer.py` over one of two transports.
   because Render's free plan makes outbound mail unreliable; sign-in is
   e-mail+password, Google, or Telegram (`app/routes/login.py`).
 
+## Administration
+
+- `ADMIN_EMAILS` is authoritative: a listed address is an admin, an unlisted
+  one is demoted on login/startup.
+- **When `ADMIN_EMAILS` is empty, the OLDEST account becomes the owner.**
+  Render's free plan has no Shell, so `python -m app.cli make_admin` cannot be
+  run there; without this fallback nobody could reach `/dashboard`. Only the
+  oldest account can be promoted, and only while no administrator exists.
+  `accounts._apply_admin_policy` holds the rule; `seed.promote_admins` applies
+  it at startup, the middleware on every request.
+- `tests/test_bootstrap.py` covers the fallback, the "second visitor stays a
+  visitor" case, and that an explicit `ADMIN_EMAILS` still wins.
+
 ## Sign-in
 
 - The sign-in field is a single **login**: an e-mail address or the `username`

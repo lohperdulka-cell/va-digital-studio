@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -74,7 +74,7 @@ def upsert_user(db: Session, profile: dict[str, Any]) -> tuple[User, bool]:
         user.avatar_url = profile["avatar_url"]
     user.last_login_at = utcnow()
 
-    _apply_admin_policy(user)
+    _apply_admin_policy(db, user)
 
     try:
         db.commit()
@@ -97,12 +97,55 @@ def upsert_user(db: Session, profile: dict[str, Any]) -> tuple[User, bool]:
     return user, created
 
 
-def _apply_admin_policy(user: User) -> None:
-    """ADMIN_EMAILS is authoritative on every login and every new account."""
+def _apply_admin_policy(db: Session, user: User) -> None:
+    """Decide ``is_admin`` for ``user``.
+
+    ``ADMIN_EMAILS`` is authoritative: an address on the list is an admin.
+    When the list is empty, the *oldest* account owns the dashboard instead —
+    a card-free host offers no Shell to run ``python -m app.cli make_admin`` in,
+    so without this fallback nobody could ever reach ``/dashboard``.
+
+    Only the oldest account can be promoted this way, and only while the site
+    has no administrator at all, so a later visitor can neither take the flag
+    nor lose it.
+    """
     if user.email.lower() in settings.admin_email_list:
         if not user.is_admin:
             logger.info("Granting admin via ADMIN_EMAILS to %s", user.email)
         user.is_admin = True
+        return
+
+    if settings.admin_email_list or user.is_admin:
+        return
+
+    if _count_admins(db) or not _is_oldest_account(db, user):
+        return
+
+    logger.info("No ADMIN_EMAILS set: promoting %s as the owner account", user.email)
+    user.is_admin = True
+
+
+def _count_admins(db: Session) -> int:
+    return (
+        db.scalar(select(func.count()).select_from(User).where(User.is_admin.is_(True)))
+        or 0
+    )
+
+
+def _is_oldest_account(db: Session, user: User) -> bool:
+    """True when ``user`` is the first account ever created."""
+    if user.id is None:
+        # Not flushed yet, so the table is empty exactly when this is the first
+        # account; a pending row cannot be compared by id.
+        return (db.scalar(select(func.count()).select_from(User)) or 0) == 0
+
+    first_id = db.scalar(select(func.min(User.id)))
+    return first_id == user.id
+
+
+def apply_admin_policy(db: Session, user: User) -> None:
+    """Public wrapper so middleware and routes share one policy."""
+    _apply_admin_policy(db, user)
 
 
 class EmailTakenError(Exception):
@@ -162,7 +205,7 @@ def register_with_password(
         name=(name or "").strip(),
         password_hash=hash_password(password),
     )
-    _apply_admin_policy(user)
+    _apply_admin_policy(db, user)
     db.add(user)
     try:
         db.commit()
@@ -192,7 +235,7 @@ def authenticate_password(db: Session, *, login: str, password: str) -> User | N
         return None
 
     user.last_login_at = utcnow()
-    _apply_admin_policy(user)
+    _apply_admin_policy(db, user)
     db.commit()
     db.refresh(user)
     return user
@@ -218,7 +261,7 @@ def upsert_by_email_code(
     if telegram_username:
         user.telegram_username = telegram_username
     user.last_login_at = utcnow()
-    _apply_admin_policy(user)
+    _apply_admin_policy(db, user)
 
     try:
         db.commit()

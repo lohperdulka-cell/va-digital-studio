@@ -62,6 +62,9 @@ services:
         sync: false
       - key: GOOGLE_CLIENT_SECRET
         sync: false
+      # Optional. Leave empty and the FIRST registered account becomes the
+      # owner (see promote_admins in app/seed.py). Set it to control which
+      # address is the administrator, comma-separated for several.
       - key: ADMIN_EMAILS
         sync: false
 
