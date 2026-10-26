@@ -241,7 +241,26 @@ def test_register_with_password_raises_on_taken_email(db):
 # --- One-time e-mail code --------------------------------------------------
 
 
-def test_code_request_shows_verify_stage(client):
+def test_code_request_is_refused_when_email_is_unconfigured(client):
+    """No SMTP: the page says so instead of claiming a code was sent."""
+    token = _csrf(client)
+    response = client.post(
+        "/auth/code",
+        data={"email": EMAIL, "csrf_token": token},
+        follow_redirects=False,
+    )
+    assert response.status_code == 503
+    assert "не настроена" in response.text
+    assert "Мы отправили" not in response.text
+
+
+def test_code_page_is_honest_when_email_is_unconfigured(client):
+    response = client.get("/auth/code")
+    assert response.status_code == 200
+    assert "не настроена" in response.text
+
+
+def test_code_request_shows_verify_stage(smtp_configured, client):
     token = _csrf(client)
     response = client.post(
         "/auth/code",
@@ -253,7 +272,19 @@ def test_code_request_shows_verify_stage(client):
     assert EMAIL in response.text
 
 
-def test_code_login_creates_account_and_signs_in(client, db):
+def test_login_page_hides_code_button_when_email_is_unconfigured(client):
+    response = client.get("/auth/login")
+    assert response.status_code == 200
+    assert "Войти по коду на почту" not in response.text
+
+
+def test_login_page_shows_code_button_when_email_is_configured(smtp_configured, client):
+    response = client.get("/auth/login")
+    assert response.status_code == 200
+    assert "Войти по коду на почту" in response.text
+
+
+def test_code_login_creates_account_and_signs_in(smtp_configured, client, db):
     token = _csrf(client)
     client.post("/auth/code", data={"email": EMAIL, "csrf_token": token})
     code = login_codes.issue_code(db, email=EMAIL)

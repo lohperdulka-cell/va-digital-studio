@@ -2,16 +2,19 @@
 
 Configured from the environment; nothing is hard-coded.  When no host is set
 the message is logged instead of sent, so development and the test suite work
-without a mail server.  Delivery can run on a daemon thread: a slow SMTP server
-must not hold a request open, and a failure must not turn a successful signup
-into an error page.
+without a mail server.  That fallback is disabled in production: writing a
+sign-in code to the deploy log is a misconfiguration, not a convenience, so
+``_deliver`` reports failure instead and the caller tells the user.
+
+Delivery is synchronous and bounded by ``_SMTP_TIMEOUT_SECONDS``: a failure is
+never allowed to turn a successful signup into an error page, but the caller
+does learn whether the message went out.
 """
 
 from __future__ import annotations
 
 import smtplib
 import ssl
-import threading
 from email.message import EmailMessage
 
 from app.config import settings
@@ -34,7 +37,19 @@ def _build_message(*, to_email: str, subject: str, body: str) -> EmailMessage:
 def _deliver(*, to_email: str, subject: str, body: str) -> bool:
     """Send one message. Returns True on success, False on any failure."""
     if not settings.email_configured:
-        # No SMTP configured: log the body so a developer can read the code.
+        if settings.is_production:
+            # In production an unconfigured mailer is a misconfiguration, not a
+            # convenience: logging the body would write sign-in codes to the
+            # deploy log.  Report the failure so the caller can tell the user.
+            # The subject can carry the sign-in code, so log the recipient only.
+            logger.error(
+                "EMAIL not sent: SMTP is not configured (set SMTP_HOST/SMTP_USER/"
+                "SMTP_PASSWORD). to=%s",
+                to_email,
+            )
+            return False
+        # Development and tests: no mail server, so log the body instead of
+        # sending it and let the developer read the code from the console.
         logger.info(
             "EMAIL [no SMTP configured] to=%s subject=%r\n%s", to_email, subject, body
         )
@@ -64,21 +79,14 @@ def _deliver(*, to_email: str, subject: str, body: str) -> bool:
                 if user:
                     server.login(user, password)
                 server.send_message(message)
-        logger.info("EMAIL sent to=%s subject=%r", to_email, subject)
+        # Subject omitted: it can carry a sign-in code.
+        logger.info("EMAIL sent to=%s", to_email)
         return True
     except Exception:
-        # Never let a mail outage break the user's action.
-        logger.exception("EMAIL delivery failed to=%s subject=%r", to_email, subject)
+        # Never let a mail outage break the user's action.  Log the recipient
+        # only: the subject and body can carry a sign-in code.
+        logger.exception("EMAIL delivery failed to=%s", to_email)
         return False
-
-
-def send_async(*, to_email: str, subject: str, body: str) -> None:
-    """Fire-and-forget delivery on a daemon thread."""
-    threading.Thread(
-        target=_deliver,
-        kwargs={"to_email": to_email, "subject": subject, "body": body},
-        daemon=True,
-    ).start()
 
 
 def _login_code_body(code: str) -> str:
@@ -93,15 +101,6 @@ def _login_code_body(code: str) -> str:
 def send_login_code(*, to_email: str, code: str) -> bool:
     """Send the six-digit sign-in code and wait for the result."""
     return _deliver(
-        to_email=to_email,
-        subject=f"Код для входа: {code}",
-        body=_login_code_body(code),
-    )
-
-
-def send_login_code_async(*, to_email: str, code: str) -> None:
-    """Non-blocking variant used by the request handler."""
-    send_async(
         to_email=to_email,
         subject=f"Код для входа: {code}",
         body=_login_code_body(code),

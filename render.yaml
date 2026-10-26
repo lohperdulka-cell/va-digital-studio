@@ -65,14 +65,22 @@ services:
       - key: ADMIN_EMAILS
         sync: false
 
-      # --- Optional e-mail -------------------------------------------------
+      # --- E-mail (Gmail over SMTP) ----------------------------------------
+      # Sign-in codes are only delivered when SMTP_HOST, SMTP_USER and
+      # SMTP_PASSWORD are all set.  Without them the code-login page says so
+      # instead of pretending to have sent a message.
+      #
+      # Gmail needs an App Password, not the account password: enable 2-Step
+      # Verification, then Google Account -> Security -> App passwords.
       - key: SUPPORT_EMAIL
         value: ethernallhatred@gmail.com
       - key: SMTP_HOST
-        sync: false
+        value: smtp.gmail.com
       - key: SMTP_PORT
         value: "587"
+      # The sending Gmail address.  Defaults to SUPPORT_EMAIL, override to send
+      # from a different mailbox.
       - key: SMTP_USER
-        sync: false
+        value: ethernallhatred@gmail.com
       - key: SMTP_PASSWORD
         sync: false

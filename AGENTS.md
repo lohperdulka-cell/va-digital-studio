@@ -67,6 +67,26 @@ Hosting is **Render**, decided by the user. Key facts learned the hard way:
 - `BASE_URL` is derived from `RENDER_EXTERNAL_URL`; set it explicitly only for
   a custom domain. `DATABASE_URL` is injected from the managed database.
 
+## E-mail (Gmail SMTP)
+
+Sign-in codes and support replies go out over SMTP (`app/services/mailer.py`).
+
+- **Unconfigured SMTP means no e-mail, not a silent log.** In production
+  `_deliver` returns `False` and logs the recipient only; the code is never
+  written to the deploy log. Development still logs the body so a developer can
+  read the code. `tests/test_mailer.py` guards both behaviours.
+- **Never log the subject or body of a message.** `send_login_code` puts the
+  code in the subject (`Код для входа: 123456`), so logging it leaks the code.
+- `settings.email_configured` requires host + sender **and**, when a username is
+  set, a password. A username without a password cannot authenticate, so it
+  counts as unconfigured and the UI says so.
+- The UI is honest about this: `/auth/login` hides the code button, and
+  `/auth/code` explains the problem instead of claiming a message was sent
+  (`_EMAIL_UNAVAILABLE` in `app/routes/login.py`).
+- Gmail needs an **App Password** (16 chars, requires 2-Step Verification), not
+  the account password. Port 587/STARTTLS. `render.yaml` already sets
+  `SMTP_HOST`/`SMTP_PORT`/`SMTP_USER`; only `SMTP_PASSWORD` is prompted for.
+
 ## Git
 
 - Default branch: `main`. Feature work goes on a branch and is merged back.

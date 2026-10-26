@@ -10,10 +10,16 @@
   <div class="auth__card">
     {% if stage == "verify" %}
       <h1 class="auth__title">Введите код</h1>
-      <p class="auth__lead">
-        Мы отправили 6-значный код на <strong>{{ sent_to }}</strong>.
-        Код действует 10 минут.
-      </p>
+      {% if email_enabled %}
+        <p class="auth__lead">
+          Мы отправили 6-значный код на <strong>{{ sent_to }}</strong>.
+          Код действует 10 минут.
+        </p>
+      {% else %}
+        <p class="auth__lead">
+          Отправить код на <strong>{{ sent_to }}</strong> не удалось.
+        </p>
+      {% endif %}
 
       {{ error_summary(errors) }}
 
@@ -41,16 +47,18 @@
 
       {{ error_summary(errors) }}
 
-      <form class="form" method="post" action="/auth/code">
-        <input type="hidden" name="{{ csrf_field_name }}" value="{{ csrf_token }}">
-        <input type="hidden" name="next" value="{{ next_url }}">
+      {% if email_enabled %}
+        <form class="form" method="post" action="/auth/code">
+          <input type="hidden" name="{{ csrf_field_name }}" value="{{ csrf_token }}">
+          <input type="hidden" name="next" value="{{ next_url }}">
 
-        {{ text_input("email", "E-mail", type="email", value=values.get("email", ""),
-                      placeholder="you@example.com", autocomplete="email",
-                      autofocus=true, field_errors=field_errors) }}
+          {{ text_input("email", "E-mail", type="email", value=values.get("email", ""),
+                        placeholder="you@example.com", autocomplete="email",
+                        autofocus=true, field_errors=field_errors) }}
 
-        <button type="submit" class="btn btn--primary btn--block">Получить код</button>
-      </form>
+          <button type="submit" class="btn btn--primary btn--block">Получить код</button>
+        </form>
+      {% endif %}
     {% endif %}
 
     {{ divider() }}

@@ -243,7 +243,17 @@ class Settings(BaseSettings):
 
     @property
     def email_configured(self) -> bool:
-        return bool(self.resolved_email_host and self.resolved_email_from)
+        """True when a code can actually be delivered.
+
+        A username without a password cannot authenticate, so it counts as
+        unconfigured: the sign-in page then tells the visitor the truth instead
+        of failing at send time.
+        """
+        if not (self.resolved_email_host and self.resolved_email_from):
+            return False
+        if self.resolved_email_user and not self.resolved_email_password:
+            return False
+        return True
 
     @property
     def telegram_configured(self) -> bool:

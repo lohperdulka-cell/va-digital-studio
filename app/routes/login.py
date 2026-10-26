@@ -54,6 +54,13 @@ logger = get_logger(__name__)
 _PENDING_TTL_SECONDS = 600
 _PENDING_COOKIE = "va_login_pending"
 
+# Shown when SMTP is unconfigured, so the page never claims to have sent a code
+# it could not deliver.
+_EMAIL_UNAVAILABLE = (
+    "Вход по коду недоступен: отправка писем на этом сайте не настроена. "
+    "Войдите с паролем или через Google."
+)
+
 
 class LoginError(AppError):
     status_code = 400
@@ -93,8 +100,8 @@ def _render_login(
             "field_errors": field_errors or {},
             "values": values or {},
             "google_enabled": settings.oauth_configured,
-            "email_enabled": True,
-            "code_available": True,
+            "email_enabled": settings.email_configured,
+            "code_available": settings.email_configured,
             "telegram_enabled": settings.telegram_configured,
             "next_url": _next_from(request),
         },
@@ -235,10 +242,10 @@ def code_page(request: Request) -> Response:
         "login_code.html",
         {
             "stage": "request",
-            "errors": [],
+            "errors": [] if settings.email_configured else [_EMAIL_UNAVAILABLE],
             "field_errors": {},
             "values": {},
-            "email_enabled": True,
+            "email_enabled": settings.email_configured,
             "next_url": _next_from(request),
         },
     )
@@ -251,6 +258,21 @@ def code_send(
     email: str = Form(default=""),
     next: str = Form(default=""),
 ) -> Response:
+    if not settings.email_configured:
+        return render(
+            request,
+            "login_code.html",
+            {
+                "stage": "request",
+                "errors": [_EMAIL_UNAVAILABLE],
+                "field_errors": {},
+                "values": {"email": email},
+                "email_enabled": False,
+                "next_url": _next_from(request),
+            },
+            status_code=503,
+        )
+
     try:
         form = CodeRequestForm(email=email)
     except ValidationError as exc:
@@ -269,18 +291,18 @@ def code_send(
         )
 
     code = login_codes.issue_code(db, email=form.email)
-    _send_code_email(form.email, code)
+    delivered = _send_code_email(form.email, code)
 
     response = render(
         request,
         "login_code.html",
         {
             "stage": "verify",
-            "errors": [],
+            "errors": [] if delivered else [_EMAIL_UNAVAILABLE],
             "field_errors": {},
             "values": {"email": form.email},
             "sent_to": form.email,
-            "email_enabled": True,
+            "email_enabled": delivered,
             "next_url": safe_next_path(next or _next_from(request)),
         },
     )
@@ -507,14 +529,20 @@ def telegram_verify(
 # --- Helpers ---------------------------------------------------------------
 
 
-def _send_code_email(email: str, code: str) -> None:
-    """Send the code without letting an SMTP problem break the request."""
+def _send_code_email(email: str, code: str) -> bool:
+    """Send the code without letting an SMTP problem break the request.
+
+    Returns whether the message was handed to the mailer successfully.  The
+    sign-in code is still valid either way — the caller only uses this to tell
+    the visitor the truth about whether an e-mail went out.
+    """
     from app.services import mailer
 
     try:
-        mailer.send_login_code_async(to_email=email, code=code)
+        return mailer.send_login_code(to_email=email, code=code)
     except Exception:  # pragma: no cover - defensive
-        logger.exception("Could not queue the login code e-mail for %s", email)
+        logger.exception("Could not send the login code e-mail to %s", email)
+        return False
 
 
 def _remember_pending(response: Response, email: str) -> None:
