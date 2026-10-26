@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}Калькулятор стоимости · {{ app_name }}{% endblock %}
+{% block description %}Рассчитайте примерную стоимость сайта, Telegram-бота или автоматизации за минуту.{% endblock %}
+
+{% block content %}
+<div class="container">
+  <nav class="breadcrumbs" aria-label="Навигация">
+    <a href="/">Главная</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span>Калькулятор</span>
+  </nav>
+
+  <div class="section-head">
+    <span class="section-head__eyebrow">Калькулятор</span>
+    <h1 class="section-head__title">Сколько будет стоить проект</h1>
+    <p class="section-head__subtitle">
+      Ответьте на несколько вопросов — покажем ориентировочную стоимость и срок.
+      Точную смету фиксируем после обсуждения задачи.
+    </p>
+  </div>
+
+  {# The form posts so the result works without JavaScript. #}
+  <div class="calc-layout">
+    <form method="post" action="/calculator" class="card" id="calc-form">
+      <input type="hidden" name="{{ csrf_field_name }}" value="{{ csrf_token }}">
+
+      <fieldset class="calc-field">
+        <legend class="field__label">Тип проекта</legend>
+        <div class="calc-options">
+          {% for value, label in project_types %}
+            <label class="calc-option">
+              <input type="radio" name="project_type" value="{{ value }}"
+                     {% if selected.project_type == value %}checked{% endif %}>
+              <span>{{ label }}</span>
+            </label>
+          {% endfor %}
+        </div>
+      </fieldset>
+
+      <fieldset class="calc-field">
+        <legend class="field__label">Объём работ</legend>
+        <div class="calc-options">
+          {% for value, label in scopes %}
+            <label class="calc-option">
+              <input type="radio" name="scope" value="{{ value }}"
+                     {% if selected.scope == value %}checked{% endif %}>
+              <span>{{ label }}</span>
+            </label>
+          {% endfor %}
+        </div>
+      </fieldset>
+
+      <fieldset class="calc-field">
+        <legend class="field__label">Сроки</legend>
+        <div class="calc-options">
+          {% for value, label in deadlines %}
+            <label class="calc-option">
+              <input type="radio" name="deadline" value="{{ value }}"
+                     {% if selected.deadline == value %}checked{% endif %}>
+              <span>{{ label }}</span>
+            </label>
+          {% endfor %}
+        </div>
+      </fieldset>
+
+      <fieldset class="calc-field">
+        <legend class="field__label">Дополнительно</legend>
+        <div class="calc-options">
+          {% for value, label in addon_options %}
+            <label class="calc-option">
+              <input type="checkbox" name="addons" value="{{ value }}"
+                     {% if selected_addons is defined and value in selected_addons %}checked{% endif %}>
+              <span>{{ label }}</span>
+            </label>
+          {% endfor %}
+        </div>
+      </fieldset>
+
+      <button class="btn btn--primary btn--block btn--lg" type="submit" style="margin-top:20px">
+        Пересчитать
+      </button>
+    </form>
+
+    <aside class="detail-side">
+      <div class="card calc-result">
+        <div class="tiny dim">Примерная стоимость</div>
+        <div class="price-tag gradient-text">
+          {{ estimate.price_low | money }} — {{ estimate.price_high | money }}
+        </div>
+        <ul class="meta-list">
+          <li class="meta-list__row">
+            <span class="meta-list__label">Срок</span>
+            <span class="meta-list__value">~{{ estimate.days }}
+              {{ estimate.days | plural('день', 'дня', 'дней') }}</span>
+          </li>
+        </ul>
+
+        {% if estimate.breakdown %}
+          <details class="calc-breakdown">
+            <summary>Из чего сложилась цена</summary>
+            <ul class="small muted" style="margin:10px 0 0;padding-left:1.1em">
+              {% for line in estimate.breakdown %}<li>{{ line }}</li>{% endfor %}
+            </ul>
+          </details>
+        {% endif %}
+
+        <p class="tiny dim" style="margin:14px 0 0">
+          Это ориентир, а не оферта. Итоговую смету согласуем в чате.
+        </p>
+
+        <a class="btn btn--primary btn--block" href="/contact" style="margin-top:14px">
+          Обсудить проект
+        </a>
+      </div>
+    </aside>
+  </div>
+</div>
+{% endblock %}

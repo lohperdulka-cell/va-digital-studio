@@ -10,9 +10,15 @@ from decimal import Decimal
 
 from sqlalchemy import select
 
-from app.models import News, Service
+from app.models import Case, News, Review, Service
 from app.models.enums import ServiceCategory
-from app.seed import bootstrap, seed_news, seed_services
+from app.seed import (
+    bootstrap,
+    seed_cases,
+    seed_news,
+    seed_reviews,
+    seed_services,
+)
 from app.services.accounts import upsert_user
 
 
@@ -95,6 +101,32 @@ def test_bootstrap_does_not_overwrite_dashboard_edits(db):
     db.expire_all()
     service = db.scalar(select(Service).where(Service.slug == "landing-page"))
     assert service.title == "Отредактировано в дашборде"
+
+
+def test_seed_cases_and_reviews(db):
+    created, _ = seed_cases(db)
+    assert created == 3
+    reviews_created = seed_reviews(db)
+    assert reviews_created == 3
+    assert len(db.scalars(select(Case)).all()) == 3
+    assert len(db.scalars(select(Review)).all()) == 3
+
+
+def test_seed_reviews_is_idempotent(db):
+    seed_reviews(db)
+    assert seed_reviews(db) == 0
+    assert len(db.scalars(select(Review)).all()) == 3
+
+
+def test_bootstrap_adds_cases_and_reviews_to_an_existing_site(db):
+    """A redeploy on a populated catalogue still gains the new sections."""
+    bootstrap()
+    assert len(db.scalars(select(Case)).all()) == 3
+    assert len(db.scalars(select(Review)).all()) == 3
+
+    bootstrap()
+    assert len(db.scalars(select(Case)).all()) == 3
+    assert len(db.scalars(select(Review)).all()) == 3
 
 
 # --- Admin promotion ---------------------------------------------------------

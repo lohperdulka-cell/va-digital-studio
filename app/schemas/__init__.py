@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from app.schemas.forms import (
     CHAT_MESSAGE_MAX,
+    CaseForm,
     ChatMessageIn,
     NewsForm,
     ServiceForm,
@@ -17,6 +18,7 @@ from app.schemas.forms import (
 
 __all__ = [
     "CHAT_MESSAGE_MAX",
+    "CaseForm",
     "ChatMessageIn",
     "NewsForm",
     "ServiceForm",

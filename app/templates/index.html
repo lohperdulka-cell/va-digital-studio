@@ -155,6 +155,103 @@
 </section>
 {% endif %}
 
+{# --- Portfolio -------------------------------------------------------- #}
+{% if cases %}
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <span class="section-head__eyebrow">Портфолио</span>
+      <h2 class="section-head__title">Кейсы с результатом</h2>
+      <p class="section-head__subtitle">
+        Реальные проекты и то, что они дали клиентам.
+      </p>
+    </div>
+
+    <div class="grid grid--cards">
+      {% for case in cases %}
+        <article class="card card--hover">
+          <div class="card__header">
+            <span class="card__icon" aria-hidden="true">{{ case.cover_emoji }}</span>
+            {% if case.is_featured %}<span class="badge badge--accent">Топ</span>{% endif %}
+          </div>
+          <h3 class="card__title">
+            <a href="/portfolio/{{ case.slug }}">{{ case.title }}</a>
+          </h3>
+          {% if case.client %}<div class="tiny dim">{{ case.client }}</div>{% endif %}
+          <p class="card__body">{{ case.summary }}</p>
+          {% if case.result_metric %}
+            <div class="result-badge">📈 {{ case.result_metric }}</div>
+          {% endif %}
+          <div class="card__footer">
+            <a class="btn btn--cyan btn--sm" href="/portfolio/{{ case.slug }}">Смотреть кейс</a>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+
+    <div class="row" style="justify-content:center;margin-top:32px">
+      <a class="btn btn--ghost" href="/portfolio">Все кейсы →</a>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{# --- Reviews ---------------------------------------------------------- #}
+{% if reviews %}
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <span class="section-head__eyebrow">Отзывы</span>
+      <h2 class="section-head__title">Нам доверяют</h2>
+      {% if reviews_summary.count %}
+        <p class="section-head__subtitle">
+          Средняя оценка ★ {{ reviews_summary.average_display }} из 5
+          по {{ reviews_summary.count }} {{ reviews_summary.count | plural('отзыву', 'отзывам', 'отзывам') }}.
+        </p>
+      {% endif %}
+    </div>
+
+    <div class="grid grid--cards">
+      {% for review in reviews %}
+        <article class="card card--flat">
+          <div class="rating" aria-label="Оценка {{ review.rating }} из 5">
+            {% for _ in range(review.rating) %}★{% endfor %}
+          </div>
+          <p class="card__body" style="margin-top:12px">«{{ review.body }}»</p>
+          <div class="card__footer" style="border-top:0;padding-top:0">
+            <span><strong>{{ review.author_name }}</strong>
+              {% if review.author_role %}<span class="tiny dim">· {{ review.author_role }}</span>{% endif %}
+            </span>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+
+    <div class="row" style="justify-content:center;margin-top:32px;gap:12px">
+      <a class="btn btn--ghost" href="/reviews">Все отзывы →</a>
+      <a class="btn btn--primary" href="/reviews">Оставить отзыв</a>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{# --- FAQ teaser ------------------------------------------------------- #}
+<section class="section">
+  <div class="container">
+    <div class="cta">
+      <h2>Остались вопросы?</h2>
+      <p>
+        Посмотрите ответы на частые вопросы или рассчитайте стоимость проекта
+        за минуту — без звонков и ожидания.
+      </p>
+      <div class="row" style="justify-content:center;gap:12px">
+        <a class="btn btn--lg" href="/faq">Частые вопросы</a>
+        <a class="btn btn--ghost btn--lg" href="/calculator">Калькулятор стоимости</a>
+      </div>
+    </div>
+  </div>
+</section>
+
 {# --- CTA -------------------------------------------------------------- #}
 <section class="section">
   <div class="container">

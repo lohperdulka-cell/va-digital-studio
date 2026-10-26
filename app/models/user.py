@@ -15,6 +15,7 @@ if TYPE_CHECKING:  # pragma: no cover - typing only
     from app.models.chat import ChatMessage
     from app.models.news import NewsLike
     from app.models.order import Order
+    from app.models.review import Review
     from app.models.support import SupportTicket
 
 
@@ -71,6 +72,9 @@ class User(Base):
     )
     support_tickets: Mapped[list[SupportTicket]] = relationship(
         back_populates="user"
+    )
+    reviews: Mapped[list[Review]] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
     )
 
     @property

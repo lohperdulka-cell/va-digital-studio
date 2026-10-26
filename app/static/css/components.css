@@ -602,3 +602,138 @@
   from { background-position: 200% 0; }
   to { background-position: -200% 0; }
 }
+
+/* --- Portfolio, reviews, FAQ, calculator (feature/improvements) ---------- */
+
+.result-badge {
+  display: inline-block;
+  margin-top: 14px;
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  background: var(--accent-soft);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.result-badge--lg {
+  font-size: 1rem;
+  padding: 10px 16px;
+  margin-top: 20px;
+}
+
+.rating { color: var(--warning); letter-spacing: 2px; white-space: nowrap; }
+
+.reviews-layout,
+.calc-layout {
+  display: grid;
+  gap: 28px;
+  align-items: start;
+}
+
+@media (min-width: 1024px) {
+  .reviews-layout,
+  .calc-layout { grid-template-columns: minmax(0, 1fr) 360px; }
+}
+
+/* --- FAQ ---------------------------------------------------------------- */
+
+.faq-search {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+
+.faq-search .input { flex: 1 1 240px; }
+
+.faq-category {
+  font-size: 1.1rem;
+  margin: 28px 0 12px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.faq-list { display: flex; flex-direction: column; gap: 10px; }
+
+.faq-item {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--gradient-surface);
+  overflow: hidden;
+}
+
+.faq-item__q {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+  cursor: pointer;
+  font-weight: 600;
+  list-style: none;
+}
+
+.faq-item__q::-webkit-details-marker { display: none; }
+
+.faq-item__chevron {
+  color: var(--accent-2);
+  font-size: 1.3rem;
+  line-height: 1;
+  transition: transform var(--transition);
+}
+
+.faq-item[open] .faq-item__chevron { transform: rotate(45deg); }
+
+.faq-item__a {
+  padding: 0 20px 18px;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border-soft);
+  padding-top: 14px;
+}
+
+/* --- Calculator --------------------------------------------------------- */
+
+.calc-field {
+  border: 0;
+  padding: 0;
+  margin: 0 0 20px;
+}
+
+.calc-field legend { margin-bottom: 10px; }
+
+.calc-options { display: flex; flex-wrap: wrap; gap: 10px; }
+
+.calc-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  cursor: pointer;
+  transition: border-color var(--transition), background var(--transition);
+  font-size: 0.92rem;
+}
+
+.calc-option:hover { border-color: var(--accent); }
+
+.calc-option:has(input:checked) {
+  border-color: var(--accent-2);
+  background: var(--accent-soft);
+}
+
+.calc-result { position: sticky; top: calc(var(--header-height) + 16px); }
+
+.calc-breakdown {
+  margin-top: 16px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border-soft);
+  padding-top: 12px;
+}
+
+.calc-breakdown summary { cursor: pointer; }

@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Вопросы и ответы · {{ app_name }}{% endblock %}
+{% block description %}Ответы на частые вопросы о разработке сайтов, ботов и автоматизации в VA Digital Studio.{% endblock %}
+
+{% block content %}
+<div class="container">
+  <nav class="breadcrumbs" aria-label="Навигация">
+    <a href="/">Главная</a>
+    <span class="breadcrumbs__sep">/</span>
+    <span>Вопросы и ответы</span>
+  </nav>
+
+  <div class="section-head">
+    <span class="section-head__eyebrow">FAQ</span>
+    <h1 class="section-head__title">Частые вопросы</h1>
+    <p class="section-head__subtitle">Собрали то, что спрашивают чаще всего. Не нашли ответ — напишите нам.</p>
+  </div>
+
+  <form method="get" action="/faq" class="faq-search" role="search">
+    <input class="input" type="search" name="q" value="{{ query }}"
+           placeholder="Поиск по вопросам…" aria-label="Поиск по вопросам">
+    <button class="btn btn--primary" type="submit">Найти</button>
+    {% if query %}<a class="btn btn--ghost" href="/faq">Сбросить</a>{% endif %}
+  </form>
+
+  {% if query %}
+    <p class="muted">
+      {% if items %}
+        Найдено: {{ items | length }}.
+      {% else %}
+        По запросу «{{ query }}» ничего не найдено.
+      {% endif %}
+    </p>
+    {% if items %}
+      <div class="faq-list">
+        {% for item in items %}
+          <details class="faq-item" id="{{ item.anchor }}">
+            <summary class="faq-item__q">
+              <span>{{ item.question }}</span>
+              <span class="faq-item__chevron" aria-hidden="true">+</span>
+            </summary>
+            <div class="faq-item__a">{{ item.answer }}</div>
+          </details>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% else %}
+    {% for category, group in grouped.items() %}
+      <h2 class="faq-category">{{ category }}</h2>
+      <div class="faq-list">
+        {% for item in group %}
+          <details class="faq-item" id="{{ item.anchor }}">
+            <summary class="faq-item__q">
+              <span>{{ item.question }}</span>
+              <span class="faq-item__chevron" aria-hidden="true">+</span>
+            </summary>
+            <div class="faq-item__a">{{ item.answer }}</div>
+          </details>
+        {% endfor %}
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <div class="cta" style="margin-top:40px">
+    <h2>Не нашли ответ?</h2>
+    <p>Задайте вопрос напрямую — ответим в течение рабочего дня.</p>
+    <div class="row" style="justify-content:center;gap:12px">
+      <a class="btn btn--lg" href="/contact">Оставить заявку</a>
+      <button type="button" class="btn btn--ghost btn--lg" data-support-open>Служба поддержки</button>
+    </div>
+  </div>
+</div>
+{% endblock %}

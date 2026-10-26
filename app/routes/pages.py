@@ -13,6 +13,8 @@ from app.security.csrf import require_csrf
 from app.security.deps import DbSession, OptionalUser
 from app.services import catalog as catalog_service
 from app.services import newsfeed as news_service
+from app.services import portfolio as portfolio_service
+from app.services import reviews as review_service
 from app.services import support as support_service
 from app.templating import render
 
@@ -23,6 +25,8 @@ router = APIRouter(tags=["pages"], dependencies=[Depends(require_csrf)])
 
 HOME_NEWS_LIMIT = 5
 HOME_SERVICES_LIMIT = 6
+HOME_CASES_LIMIT = 3
+HOME_REVIEWS_LIMIT = 3
 
 
 @router.get("/")
@@ -35,6 +39,9 @@ def home(request: Request, db: DbSession):
                 db, limit=HOME_SERVICES_LIMIT
             ),
             "news": news_service.list_news(db, limit=HOME_NEWS_LIMIT),
+            "cases": portfolio_service.list_cases(db, limit=HOME_CASES_LIMIT),
+            "reviews": review_service.list_approved(db, limit=HOME_REVIEWS_LIMIT),
+            "reviews_summary": review_service.summary(db),
             "stats": catalog_service.home_stats(db),
         },
     )

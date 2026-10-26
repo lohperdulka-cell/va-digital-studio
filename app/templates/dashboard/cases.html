@@ -1,0 +1,64 @@
+{% extends "dashboard/base.html" %}
+{% block dash_title %}Кейсы{% endblock %}
+
+{% block dash_content %}
+<div class="dash__head">
+  <h1 class="dash__title">Портфолио (кейсы)</h1>
+  <a class="btn btn--primary btn--sm" href="/dashboard/cases/new">+ Новый кейс</a>
+</div>
+
+{% if cases %}
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Кейс</th>
+          <th>Клиент</th>
+          <th>Результат</th>
+          <th>Статус</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for case in cases %}
+          <tr>
+            <td style="font-size:1.3rem">{{ case.cover_emoji }}</td>
+            <td>
+              <a href="/dashboard/cases/{{ case.id }}">{{ case.title }}</a>
+              <div class="tiny dim mono">/portfolio/{{ case.slug }}</div>
+            </td>
+            <td class="small">{{ case.client or '—' }}</td>
+            <td class="small">{{ case.result_metric or '—' }}</td>
+            <td>
+              {% if case.is_published %}
+                <span class="badge status-done">Опубликован</span>
+              {% else %}
+                <span class="badge status-draft">Черновик</span>
+              {% endif %}
+              {% if case.is_featured %}<span class="badge badge--accent">Топ</span>{% endif %}
+            </td>
+            <td>
+              <div class="row" style="gap:8px;flex-wrap:nowrap">
+                <a class="btn btn--ghost btn--sm" href="/dashboard/cases/{{ case.id }}">Изменить</a>
+                <form method="post" action="/dashboard/cases/{{ case.id }}/delete"
+                      data-confirm="Удалить кейс «{{ case.title }}»?">
+                  <input type="hidden" name="{{ csrf_field_name }}" value="{{ csrf_token }}">
+                  <button class="btn btn--danger btn--sm" type="submit">Удалить</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <div class="empty">
+    <div class="empty__icon" aria-hidden="true">🗂</div>
+    <h2 class="empty__title">Кейсов пока нет</h2>
+    <p class="empty__text">Добавьте выполненный проект, чтобы показать его на сайте.</p>
+    <a class="btn btn--primary" href="/dashboard/cases/new">Создать кейс</a>
+  </div>
+{% endif %}
+{% endblock %}

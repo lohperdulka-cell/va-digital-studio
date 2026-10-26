@@ -98,6 +98,7 @@ def render(
         "nav_orders_unread": getattr(request.state, "nav_orders_unread", 0),
         "nav_chats_unread": getattr(request.state, "nav_chats_unread", 0),
         "nav_tickets_open": getattr(request.state, "nav_tickets_open", 0),
+        "nav_reviews_pending": getattr(request.state, "nav_reviews_pending", 0),
     }
     if context:
         payload.update(context)

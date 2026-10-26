@@ -1,0 +1,126 @@
+{% extends "dashboard/base.html" %}
+{% set editing = case is not none %}
+{% block dash_title %}{{ 'Изменить кейс' if editing else 'Новый кейс' }}{% endblock %}
+
+{% block crumbs %}
+  <span class="breadcrumbs__sep">/</span>
+  <a href="/dashboard/cases">Кейсы</a>
+  <span class="breadcrumbs__sep">/</span>
+  <span>{{ 'Изменить' if editing else 'Новый' }}</span>
+{% endblock %}
+
+{% block dash_content %}
+<div class="dash__head">
+  <h1 class="dash__title">{{ 'Изменить кейс' if editing else 'Новый кейс' }}</h1>
+  <a class="btn btn--ghost btn--sm" href="/dashboard/cases">← К списку</a>
+</div>
+
+<form method="post" action="/dashboard/cases/save" class="card">
+  <input type="hidden" name="{{ csrf_field_name }}" value="{{ csrf_token }}">
+  {% if editing %}<input type="hidden" name="case_id" value="{{ case.id }}">{% endif %}
+
+  <label class="field">
+    <span class="field__label">Название кейса *</span>
+    <input class="input" type="text" name="title" required maxlength="240"
+           value="{{ form.get('title', '') }}" placeholder="Лендинг для студии ремонта">
+  </label>
+
+  <div class="field-grid" style="margin-top:16px">
+    <label class="field">
+      <span class="field__label">Slug (URL)</span>
+      <input class="input" type="text" name="slug" maxlength="160"
+             value="{{ form.get('slug', '') }}" placeholder="repair-studio-landing">
+      <span class="field__hint">Пусто — соберём из названия.</span>
+    </label>
+
+    <label class="field">
+      <span class="field__label">Клиент</span>
+      <input class="input" type="text" name="client" maxlength="160"
+             value="{{ form.get('client', '') }}" placeholder="Студия ремонта квартир">
+    </label>
+  </div>
+
+  <div class="field-grid" style="margin-top:16px">
+    <label class="field">
+      <span class="field__label">Результат (метрика)</span>
+      <input class="input" type="text" name="result_metric" maxlength="160"
+             value="{{ form.get('result_metric', '') }}" placeholder="Заявки не теряются">
+    </label>
+
+    <label class="field">
+      <span class="field__label">Обложка (эмодзи)</span>
+      <input class="input" type="text" name="cover_emoji" maxlength="8"
+             value="{{ form.get('cover_emoji', '🧩') }}">
+    </label>
+  </div>
+
+  <label class="field" style="margin-top:16px">
+    <span class="field__label">Краткое описание</span>
+    <input class="input" type="text" name="summary" maxlength="500"
+           value="{{ form.get('summary', '') }}"
+           placeholder="Что сделали и какой результат получил клиент">
+  </label>
+
+  <label class="field" style="margin-top:16px">
+    <span class="field__label">Описание кейса</span>
+    <textarea class="input" name="body" rows="10"
+              placeholder="Задача, решение, результат…">{{ form.get('body', '') }}</textarea>
+    <span class="field__hint">Допустимо простое форматирование: абзацы, списки, ссылки.</span>
+  </label>
+
+  <div class="field-grid" style="margin-top:16px">
+    <label class="field">
+      <span class="field__label">Теги (через запятую)</span>
+      <input class="input" type="text" name="tags"
+             value="{{ form.get('tags', '') }}" placeholder="лендинг, адаптив, Telegram">
+    </label>
+
+    <label class="field">
+      <span class="field__label">Ссылка на проект</span>
+      <input class="input" type="url" name="external_url" maxlength="500"
+             value="{{ form.get('external_url', '') }}" placeholder="https://example.com">
+    </label>
+  </div>
+
+  <div class="field-grid" style="margin-top:16px">
+    <label class="field">
+      <span class="field__label">Связанная услуга (slug)</span>
+      <input class="input" type="text" name="service_slug" maxlength="160"
+             value="{{ form.get('service_slug', '') }}" placeholder="landing-page">
+      <span class="field__hint">Необязательно. Slug услуги из каталога.</span>
+    </label>
+
+    <label class="field">
+      <span class="field__label">Порядок сортировки</span>
+      <input class="input" type="number" name="sort_order" min="0" max="9999"
+             value="{{ form.get('sort_order', 0) }}">
+    </label>
+  </div>
+
+  <div class="row" style="margin-top:20px;gap:24px">
+    <label class="checkbox">
+      <input type="checkbox" name="is_published" value="1"
+             {% if form.get('is_published', True) %}checked{% endif %}>
+      <span>Опубликовать</span>
+    </label>
+    <label class="checkbox">
+      <input type="checkbox" name="is_featured" value="1"
+             {% if form.get('is_featured', False) %}checked{% endif %}>
+      <span>Показывать в подборке (топ)</span>
+    </label>
+  </div>
+
+  <div class="row" style="margin-top:24px;gap:12px">
+    <button class="btn btn--primary" type="submit">
+      {{ 'Сохранить изменения' if editing else 'Создать кейс' }}
+    </button>
+    <a class="btn btn--ghost" href="/dashboard/cases">Отмена</a>
+    {% if editing and case.is_published %}
+      <span class="spacer"></span>
+      <a class="btn btn--ghost btn--sm" href="/portfolio/{{ case.slug }}" target="_blank" rel="noopener">
+        Открыть на сайте ↗
+      </a>
+    {% endif %}
+  </div>
+</form>
+{% endblock %}

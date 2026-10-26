@@ -23,10 +23,13 @@ from app.middleware import CurrentUserMiddleware
 from app.routes import admin as admin_routes
 from app.routes import auth as auth_routes
 from app.routes import chat as chat_routes
+from app.routes import faq as faq_routes
 from app.routes import login as login_routes
 from app.routes import news as news_routes
 from app.routes import pages as page_routes
+from app.routes import portfolio as portfolio_routes
 from app.routes import profile as profile_routes
+from app.routes import reviews as review_routes
 from app.routes import services as service_routes
 from app.security.csrf import CsrfCookieMiddleware
 from app.security.headers import SecurityHeadersMiddleware
@@ -113,6 +116,9 @@ app.include_router(login_routes.router)
 app.include_router(page_routes.router)
 app.include_router(service_routes.router)
 app.include_router(news_routes.router)
+app.include_router(portfolio_routes.router)
+app.include_router(review_routes.router)
+app.include_router(faq_routes.router)
 app.include_router(profile_routes.router)
 app.include_router(chat_routes.router)
 app.include_router(admin_routes.router)

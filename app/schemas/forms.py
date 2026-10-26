@@ -188,3 +188,49 @@ class NewsForm(BaseModel):
     @classmethod
     def _clean_rich(cls, value: str) -> str:
         return clean_rich_text(value)
+
+
+class CaseForm(BaseModel):
+    """Create/update a portfolio case from the dashboard form."""
+
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    slug: str = Field(default="", max_length=160)
+    title: str = Field(min_length=_TITLE_MIN, max_length=240)
+    client: str = Field(default="", max_length=160)
+    summary: str = Field(default="", max_length=500)
+    body: str = Field(default="", max_length=_RICH_TEXT_MAX)
+    result_metric: str = Field(default="", max_length=160)
+    cover_emoji: str = Field(default="🧩", max_length=8)
+    tags: list[str] = Field(default_factory=list)
+    external_url: str = Field(default="", max_length=500)
+    service_slug: str = Field(default="", max_length=160)
+    is_published: bool = True
+    is_featured: bool = False
+    sort_order: int = Field(default=0, ge=0, le=9999)
+
+    @field_validator("title", "client", "summary", "result_metric", "service_slug")
+    @classmethod
+    def _clean_plain(cls, value: str) -> str:
+        return clean_plain_text(value, max_length=500)
+
+    @field_validator("body")
+    @classmethod
+    def _clean_rich(cls, value: str) -> str:
+        return clean_rich_text(value)
+
+    @field_validator("tags", mode="before")
+    @classmethod
+    def _parse_tags(cls, value: object) -> list[str]:
+        return _split_tags(value)
+
+    @field_validator("external_url")
+    @classmethod
+    def _clean_url(cls, value: str) -> str:
+        """Accept only http(s) links so a saved value cannot be ``javascript:``."""
+        url = value.strip()
+        if not url:
+            return ""
+        if not url.startswith(("http://", "https://")):
+            raise ValueError("Ссылка должна начинаться с http:// или https://")
+        return url

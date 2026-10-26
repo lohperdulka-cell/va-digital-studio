@@ -29,7 +29,11 @@
 
   <a class="drawer__link {% if path == '/' %}is-active{% endif %}" href="/">🏠 Главная</a>
   <a class="drawer__link {% if path.startswith('/catalog') %}is-active{% endif %}" href="/catalog">🧩 Каталог услуг</a>
+  <a class="drawer__link {% if path.startswith('/portfolio') %}is-active{% endif %}" href="/portfolio">🗂 Портфолио</a>
   <a class="drawer__link {% if path.startswith('/news') %}is-active{% endif %}" href="/news">📰 Новости</a>
+  <a class="drawer__link {% if path == '/calculator' %}is-active{% endif %}" href="/calculator">🧮 Калькулятор</a>
+  <a class="drawer__link {% if path.startswith('/reviews') %}is-active{% endif %}" href="/reviews">⭐ Отзывы</a>
+  <a class="drawer__link {% if path.startswith('/faq') %}is-active{% endif %}" href="/faq">❓ FAQ</a>
   <a class="drawer__link {% if path == '/about' %}is-active{% endif %}" href="/about">✨ О студии</a>
 
   <div class="drawer__divider"></div>

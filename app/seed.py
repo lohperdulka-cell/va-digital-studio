@@ -15,7 +15,7 @@ from sqlalchemy.orm import Session
 from app.config import settings
 from app.database import Base, SessionLocal, engine
 from app.logging_config import get_logger, setup_logging
-from app.models import News, NewsLike, Service, User
+from app.models import Case, News, NewsLike, Review, Service, User
 from app.models.enums import ServiceCategory
 
 logger = get_logger(__name__)
@@ -211,6 +211,111 @@ NEWS: list[dict] = [
     },
 ]
 
+CASES: list[dict] = [
+    {
+        "slug": "repair-studio-landing",
+        "title": "Лендинг для студии ремонта",
+        "client": "Студия ремонта квартир",
+        "summary": (
+            "Одностраничный сайт с расчётом стоимости и заявками, "
+            "которые мгновенно приходят в Telegram."
+        ),
+        "body": (
+            "<p>Заявки принимали в мессенджерах, часть обращений терялась. "
+            "Собрали лендинг с понятной структурой и автоматической доставкой "
+            "заявок менеджеру.</p>"
+            "<ul><li>прототип и структура под услугу</li>"
+            "<li>адаптивный дизайн</li>"
+            "<li>форма заявки с уведомлением в Telegram</li></ul>"
+        ),
+        "result_metric": "Заявки не теряются",
+        "cover_emoji": "🌐",
+        "tags": ["лендинг", "адаптив", "Telegram"],
+        "service_slug": "landing-page",
+        "is_featured": True,
+        "sort_order": 1,
+    },
+    {
+        "slug": "delivery-orders-bot",
+        "title": "Бот для службы доставки",
+        "client": "Служба доставки",
+        "summary": (
+            "Оформление заказа сократилось с 10 до 2 минут, "
+            "ручной ввод адресов убран."
+        ),
+        "body": (
+            "<p>Диспетчер вручную переносил заявки из переписки в таблицу. "
+            "Бот задаёт вопросы, принимает заказ и передаёт его диспетчеру.</p>"
+            "<ul><li>пошаговый опрос клиента</li>"
+            "<li>запись заявки в Google Sheets</li>"
+            "<li>уведомление с адресом и телефоном</li></ul>"
+        ),
+        "result_metric": "Оформление ~2 мин",
+        "cover_emoji": "📦",
+        "tags": ["Telegram-бот", "заявки", "Google Sheets"],
+        "service_slug": "telegram-bot-orders",
+        "is_featured": True,
+        "sort_order": 2,
+    },
+    {
+        "slug": "shop-reports-automation",
+        "title": "Автоотчётность интернет-магазина",
+        "client": "Интернет-магазин",
+        "summary": (
+            "Владелец получает сводку продаж каждое утро вместо ручного "
+            "сбора данных из трёх таблиц."
+        ),
+        "body": (
+            "<p>Ежедневно уходил час на сведение продаж из нескольких "
+            "источников. Автоматизировали сбор и отправку сводки.</p>"
+            "<ul><li>скрипт собирает данные автоматически</li>"
+            "<li>сводка приходит в Telegram каждое утро</li>"
+            "<li>контроль ошибок и уведомления о сбоях</li></ul>"
+        ),
+        "result_metric": "−1 час рутины в день",
+        "cover_emoji": "📊",
+        "tags": ["Python", "отчёты", "автоматизация"],
+        "service_slug": "automation-script",
+        "is_featured": True,
+        "sort_order": 3,
+    },
+]
+
+REVIEWS: list[dict] = [
+    {
+        "author_name": "Алексей М.",
+        "author_role": "Студия ремонта квартир",
+        "rating": 5,
+        "body": (
+            "Сделали лендинг быстро и аккуратно. Заявки теперь приходят "
+            "в Telegram, ничего не теряется. Отдельно порадовало, что "
+            "объясняли каждый шаг."
+        ),
+        "is_approved": True,
+    },
+    {
+        "author_name": "Марина К.",
+        "author_role": "Служба доставки",
+        "rating": 5,
+        "body": (
+            "Бот для заявок окупился за первую неделю. Диспетчер больше "
+            "не переносит заказы вручную, а мы видим статистику в одном месте."
+        ),
+        "is_approved": True,
+    },
+    {
+        "author_name": "Дмитрий В.",
+        "author_role": "Интернет-магазин",
+        "rating": 4,
+        "body": (
+            "Автоматизация отчётности работает стабильно уже несколько "
+            "месяцев. Один раз потребовалась доработка — отреагировали "
+            "в тот же день."
+        ),
+        "is_approved": True,
+    },
+]
+
 def seed_services(db: Session) -> tuple[int, int]:
     created = updated = 0
     for payload in SERVICES:
@@ -241,6 +346,35 @@ def seed_news(db: Session) -> tuple[int, int]:
     return created, updated
 
 
+def seed_cases(db: Session) -> tuple[int, int]:
+    created = updated = 0
+    for payload in CASES:
+        item = db.scalar(select(Case).where(Case.slug == payload["slug"]))
+        if item is None:
+            db.add(Case(**payload))
+            created += 1
+        else:
+            for field, value in payload.items():
+                setattr(item, field, value)
+            updated += 1
+    db.commit()
+    return created, updated
+
+
+def seed_reviews(db: Session) -> int:
+    """Add sample reviews once, matched by author so a restart does not duplicate."""
+    created = 0
+    for payload in REVIEWS:
+        exists = db.scalar(
+            select(Review).where(Review.author_name == payload["author_name"])
+        )
+        if exists is None:
+            db.add(Review(**payload))
+            created += 1
+    db.commit()
+    return created
+
+
 def promote_admins(db: Session) -> int:
     """Promote any existing user whose e-mail is in ADMIN_EMAILS."""
     wanted = set(settings.admin_email_list)
@@ -261,8 +395,10 @@ def reset_content(db: Session) -> None:
     db.execute(delete(NewsLike))
     db.execute(delete(News))
     db.execute(delete(Service))
+    db.execute(delete(Review))
+    db.execute(delete(Case))
     db.commit()
-    logger.warning("Seed content removed (services, news, likes)")
+    logger.warning("Seed content removed (services, news, cases, reviews, likes)")
 
 
 def run(*, reset: bool = False) -> None:
@@ -276,6 +412,8 @@ def run(*, reset: bool = False) -> None:
 
         services_created, services_updated = seed_services(db)
         news_created, news_updated = seed_news(db)
+        cases_created, cases_updated = seed_cases(db)
+        reviews_created = seed_reviews(db)
         admins = promote_admins(db)
 
         service_total = len(list(db.scalars(select(Service))))
@@ -284,6 +422,8 @@ def run(*, reset: bool = False) -> None:
     print("VA Digital Studio — сидинг завершён")
     print(f"  услуги:  +{services_created} новых, ~{services_updated} обновлено (всего {service_total})")
     print(f"  новости: +{news_created} новых, ~{news_updated} обновлено (всего {news_total})")
+    print(f"  кейсы:   +{cases_created} новых, ~{cases_updated} обновлено")
+    print(f"  отзывы:  +{reviews_created} новых")
     print(f"  админов назначено: {admins}")
     if not settings.admin_email_list:
         print(
@@ -295,12 +435,12 @@ def run(*, reset: bool = False) -> None:
 
 
 def bootstrap() -> None:
-    """Startup hook: fill an empty catalogue, then sync admin rights.
+    """Startup hook: fill empty content tables, then sync admin rights.
 
-    Content is seeded only when the catalogue has no services, so a redeploy
-    never overwrites edits made through the dashboard.  Admin promotion runs
-    on every start because it is idempotent, and it lets a changed
-    ADMIN_EMAILS take effect without the operator logging out and back in.
+    Each table is seeded only when it is empty, so a redeploy never overwrites
+    edits made through the dashboard.  Admin promotion runs on every start
+    because it is idempotent, and it lets a changed ADMIN_EMAILS take effect
+    without the operator logging out and back in.
     """
     setup_logging()
     # start.sh runs alembic first, so this is normally a no-op; it only spares
@@ -322,6 +462,19 @@ def bootstrap() -> None:
             )
         else:
             print(f"[bootstrap] каталог уже заполнен ({service_total} услуг) — пропускаю")
+
+        # Cases and reviews are seeded independently of the catalogue: an
+        # existing deployment gains them on the next redeploy without touching
+        # the services/news it already has.
+        case_total = db.scalar(select(func.count()).select_from(Case)) or 0
+        if case_total == 0:
+            cases_created, _ = seed_cases(db)
+            print(f"[bootstrap] кейсы добавлены: +{cases_created}")
+
+        review_total = db.scalar(select(func.count()).select_from(Review)) or 0
+        if review_total == 0:
+            reviews_created = seed_reviews(db)
+            print(f"[bootstrap] отзывы добавлены: +{reviews_created}")
 
         promoted = promote_admins(db)
         if promoted:

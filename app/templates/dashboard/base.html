@@ -18,6 +18,8 @@
         ('/dashboard/chats', 'Чаты', '💬', nav_chats_unread),
         ('/dashboard/support', 'Поддержка', '🎧', nav_tickets_open),
         ('/dashboard/services', 'Услуги', '🧩', none),
+        ('/dashboard/cases', 'Кейсы', '🗂', none),
+        ('/dashboard/reviews', 'Отзывы', '⭐', nav_reviews_pending),
         ('/dashboard/news', 'Новости', '📰', none)
       ] %}
       {% for href, label, icon, count in sections %}

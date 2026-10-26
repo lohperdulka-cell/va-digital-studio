@@ -19,7 +19,7 @@ from app.flash import flash
 from app.logging_config import get_logger
 from app.models import Order
 from app.models.enums import OrderStatus, ServiceCategory, TicketStatus
-from app.schemas.forms import NewsForm, ServiceForm, TicketReplyForm
+from app.schemas.forms import CaseForm, NewsForm, ServiceForm, TicketReplyForm
 from app.security.csrf import require_csrf
 from app.security.deps import CurrentAdmin, DbSession
 from app.security.sanitize import clean_slug
@@ -29,6 +29,8 @@ from app.services import chat as chat_service
 from app.services import dashboard as dashboard_service
 from app.services import newsfeed as news_service
 from app.services import orders as order_service
+from app.services import portfolio as portfolio_service
+from app.services import reviews as review_service
 from app.services import support as support_service
 from app.templating import render
 
@@ -48,6 +50,7 @@ async def attach_nav_counts(
     request.state.nav_orders_unread = stats.chats_unread
     request.state.nav_chats_unread = stats.chats_unread
     request.state.nav_tickets_open = stats.tickets_open
+    request.state.nav_reviews_pending = len(review_service.list_pending(db))
 
 
 router = APIRouter(
@@ -511,6 +514,174 @@ def news_delete(
     news_service.delete_news(db, item)
     flash(request, f"Новость «{title}» удалена", "info")
     return _redirect("/dashboard/news")
+
+
+# --- Cases (portfolio) -----------------------------------------------------
+
+
+@router.get("/cases")
+def cases(request: Request, admin: CurrentAdmin, db: DbSession):
+    return render(
+        request, "dashboard/cases.html", {"cases": portfolio_service.list_all_cases(db)}
+    )
+
+
+@router.get("/cases/new")
+def case_new(request: Request, admin: CurrentAdmin):
+    return render(
+        request, "dashboard/case_form.html", {"case": None, "form": {}}
+    )
+
+
+@router.get("/cases/{case_id}")
+def case_edit(
+    request: Request,
+    case_id: int,
+    admin: CurrentAdmin,
+    db: DbSession,
+):
+    case = portfolio_service.get_case(db, case_id)
+    if case is None:
+        raise NotFoundError(detail="Кейс не найден")
+    return render(
+        request,
+        "dashboard/case_form.html",
+        {
+            "case": case,
+            "form": {
+                "slug": case.slug,
+                "title": case.title,
+                "client": case.client,
+                "summary": case.summary,
+                "body": case.body,
+                "result_metric": case.result_metric,
+                "cover_emoji": case.cover_emoji,
+                "tags": ", ".join(case.tags or []),
+                "external_url": case.external_url,
+                "service_slug": case.service_slug,
+                "is_published": case.is_published,
+                "is_featured": case.is_featured,
+                "sort_order": case.sort_order,
+            },
+        },
+    )
+
+
+@router.post("/cases/save")
+async def case_save(request: Request, admin: CurrentAdmin, db: DbSession):
+    raw = await request.form()
+    case_id = str(raw.get("case_id") or "").strip()
+
+    try:
+        payload = CaseForm(
+            slug=str(raw.get("slug") or ""),
+            title=str(raw.get("title") or ""),
+            client=str(raw.get("client") or ""),
+            summary=str(raw.get("summary") or ""),
+            body=str(raw.get("body") or ""),
+            result_metric=str(raw.get("result_metric") or ""),
+            cover_emoji=str(raw.get("cover_emoji") or "🧩"),
+            tags=str(raw.get("tags") or ""),
+            external_url=str(raw.get("external_url") or ""),
+            service_slug=str(raw.get("service_slug") or ""),
+            is_published=_checkbox(raw, "is_published"),
+            is_featured=_checkbox(raw, "is_featured"),
+            sort_order=str(raw.get("sort_order") or "0"),
+        )
+    except ValidationError as exc:
+        flash(request, _first_error(exc), "error")
+        target = f"/dashboard/cases/{case_id}" if case_id else "/dashboard/cases/new"
+        return _redirect(target)
+
+    data = {
+        "slug": payload.slug or clean_slug(payload.title),
+        "title": payload.title,
+        "client": payload.client,
+        "summary": payload.summary,
+        "body": payload.body,
+        "result_metric": payload.result_metric,
+        "cover_emoji": payload.cover_emoji,
+        "tags": payload.tags,
+        "external_url": payload.external_url,
+        "service_slug": payload.service_slug,
+        "is_published": payload.is_published,
+        "is_featured": payload.is_featured,
+        "sort_order": payload.sort_order,
+    }
+
+    if case_id:
+        case = portfolio_service.get_case(db, int(case_id))
+        if case is None:
+            raise NotFoundError(detail="Кейс не найден")
+        portfolio_service.update_case(db, case, data)
+        flash(request, f"Кейс «{case.title}» обновлён", "success")
+    else:
+        case = portfolio_service.create_case(db, data)
+        flash(request, f"Кейс «{case.title}» создан", "success")
+
+    return _redirect("/dashboard/cases")
+
+
+@router.post("/cases/{case_id}/delete")
+def case_delete(
+    request: Request,
+    case_id: int,
+    admin: CurrentAdmin,
+    db: DbSession,
+):
+    case = portfolio_service.get_case(db, case_id)
+    if case is None:
+        raise NotFoundError(detail="Кейс не найден")
+    title = case.title
+    portfolio_service.delete_case(db, case)
+    flash(request, f"Кейс «{title}» удалён", "info")
+    return _redirect("/dashboard/cases")
+
+
+# --- Reviews (moderation) --------------------------------------------------
+
+
+@router.get("/reviews")
+def reviews(request: Request, admin: CurrentAdmin, db: DbSession):
+    return render(
+        request,
+        "dashboard/reviews.html",
+        {
+            "pending": review_service.list_pending(db),
+            "approved": review_service.list_approved(db, limit=100),
+            "summary": review_service.summary(db),
+        },
+    )
+
+
+@router.post("/reviews/{review_id}/approve")
+def review_approve(
+    request: Request,
+    review_id: int,
+    admin: CurrentAdmin,
+    db: DbSession,
+):
+    review = review_service.get_review(db, review_id)
+    if review is None:
+        raise NotFoundError(detail="Отзыв не найден")
+    review_service.approve(db, review)
+    flash(request, "Отзыв опубликован", "success")
+    return _redirect("/dashboard/reviews")
+
+
+@router.post("/reviews/{review_id}/reject")
+def review_reject(
+    request: Request,
+    review_id: int,
+    admin: CurrentAdmin,
+    db: DbSession,
+):
+    review = review_service.get_review(db, review_id)
+    if review is None:
+        raise NotFoundError(detail="Отзыв не найден")
+    review_service.reject(db, review)
+    flash(request, "Отзыв отклонён и удалён", "info")
+    return _redirect("/dashboard/reviews")
 
 
 # --- Helpers ---------------------------------------------------------------
