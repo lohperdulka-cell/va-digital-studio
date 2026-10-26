@@ -24,7 +24,7 @@ production. Russian-language UI, no SPA — progressive-enhancement JS only.
 ## Commands
 
 ```bash
-python -m pytest -q                  # full suite (~254 tests)
+python -m pytest -q                  # full suite (~338 tests)
 python -m alembic revision --autogenerate -m "..."   # new migration
 python -m alembic upgrade head       # apply migrations
 python -m app.seed --bootstrap       # seed empty tables + promote admins
@@ -116,6 +116,16 @@ Sent from `app/services/mailer.py` over one of two transports.
 - Registration requires `username`, `email`, `password`, `password_confirm`.
   `UsernameTakenError` and `EmailTakenError` are reported to the user on
   purpose — the rate limiter blunts enumeration.
+
+## Catalogue (services and pricing)
+
+- Three categories only: `sites`, `bots`, `automation`. The `design` bucket was
+  removed; migration `b2c3d4e5f6a7` deletes any leftover `DESIGN` rows, because
+  the narrowed Python enum would raise on reading one back.
+- Prices run from a 500 ₽ single-page site to a 5,000 ₽ multi-page site.
+  `app/services/estimator.py` mirrors the catalogue entry points, and
+  `app/services/faq.py` quotes the same numbers in prose — keep the three in
+  sync when a price changes.
 
 ## Languages (RU / EN)
 

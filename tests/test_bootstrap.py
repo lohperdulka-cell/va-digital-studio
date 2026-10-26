@@ -44,9 +44,9 @@ def test_seed_services_creates_the_full_catalogue(db):
     services = db.scalars(select(Service).order_by(Service.sort_order)).all()
     assert [s.slug for s in services] == [
         "landing-page",
+        "multipage-site",
         "telegram-bot-orders",
         "automation-script",
-        "banner-design",
     ]
     assert all(Decimal("500") <= s.price_from <= Decimal("5000") for s in services)
 

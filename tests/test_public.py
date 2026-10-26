@@ -36,10 +36,10 @@ def service(db) -> Service:
 @pytest.fixture
 def other_service(db) -> Service:
     item = Service(
-        slug="test-design",
-        title="Тестовый дизайн",
-        short_description="Описание дизайна",
-        category=ServiceCategory.DESIGN,
+        slug="test-extra",
+        title="Тестовая услуга",
+        short_description="Описание услуги",
+        category=ServiceCategory.AUTOMATION,
         tags=[],
         price_from=Decimal("10000.00"),
     )
@@ -101,7 +101,7 @@ def test_catalog_shows_service(client, service):
 def test_catalog_category_filter(client, service, other_service):
     response = client.get("/catalog?category=bots")
     assert "Тестовые боты" in response.text
-    assert "Тестовый дизайн" not in response.text
+    assert "Тестовая услуга" not in response.text
 
 
 def test_catalog_ignores_unknown_category(client, service):

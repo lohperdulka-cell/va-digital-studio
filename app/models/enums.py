@@ -18,7 +18,6 @@ class ServiceCategory(StrEnum):
     SITES = "sites"
     BOTS = "bots"
     AUTOMATION = "automation"
-    DESIGN = "design"
 
     @property
     def label(self) -> str:
@@ -29,7 +28,6 @@ _CATEGORY_LABELS = {
     ServiceCategory.SITES: "Сайты",
     ServiceCategory.BOTS: "Telegram-боты",
     ServiceCategory.AUTOMATION: "Автоматизация",
-    ServiceCategory.DESIGN: "Дизайн",
 }
 
 

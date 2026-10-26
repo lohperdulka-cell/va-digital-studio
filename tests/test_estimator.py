@@ -13,8 +13,20 @@ def test_estimate_uses_base_price_and_days():
     )
     assert result.price_low < result.price_high
     assert result.days >= 1
-    # Base landing price is 5000, range brackets it.
-    assert result.price_low <= Decimal("5000") <= result.price_high
+    # Base single-page price is 500, range brackets it.
+    assert result.price_low <= Decimal("500") <= result.price_high
+
+
+def test_entry_and_top_prices_bracket_the_offer():
+    """The catalogue runs from a 500 ₽ single page to a 5,000 ₽ multi-page site."""
+    cheap = estimator_service.estimate(
+        project_type="landing", scope="basic", deadline="relaxed"
+    )
+    rich = estimator_service.estimate(
+        project_type="corporate", scope="basic", deadline="relaxed"
+    )
+    assert cheap.price_low <= Decimal("500") <= cheap.price_high
+    assert rich.price_low <= Decimal("5000") <= rich.price_high
 
 
 def test_scope_and_deadline_raise_the_price():
@@ -33,7 +45,7 @@ def test_addons_add_price_and_days():
         project_type="bot",
         scope="basic",
         deadline="relaxed",
-        addons=["design", "support"],
+        addons=["content", "support"],
     )
     assert with_addons.price_low > plain.price_low
     assert with_addons.days > plain.days

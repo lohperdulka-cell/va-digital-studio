@@ -16,27 +16,24 @@ from app.i18n import t as _t
 # Base price and lead time per project type.  Prices are the studio's entry
 # points; the catalogue's `price_from` mirrors them.
 BASE_PRICE: dict[str, Decimal] = {
-    "landing": Decimal("5000"),
-    "corporate": Decimal("12000"),
+    "landing": Decimal("500"),
+    "corporate": Decimal("5000"),
     "bot": Decimal("3500"),
     "automation": Decimal("1500"),
-    "design": Decimal("500"),
 }
 
 BASE_DAYS: dict[str, int] = {
-    "landing": 3,
-    "corporate": 10,
+    "landing": 2,
+    "corporate": 7,
     "bot": 2,
     "automation": 1,
-    "design": 1,
 }
 
 PROJECT_LABELS: dict[str, str] = {
-    "landing": "Лендинг",
+    "landing": "Одностраничный сайт",
     "corporate": "Многостраничный сайт",
     "bot": "Telegram-бот",
     "automation": "Автоматизация",
-    "design": "Дизайн",
 }
 
 # Scope answers: multiplier on the base price and extra days.
@@ -67,14 +64,12 @@ DEADLINE_LABELS: dict[str, str] = {
 
 # One-time add-ons: a flat extra charge and days.
 ADDONS: dict[str, tuple[Decimal, int]] = {
-    "design": (Decimal("3000"), 2),
     "content": (Decimal("2000"), 2),
     "integrations": (Decimal("2500"), 2),
     "support": (Decimal("1500"), 0),
 }
 
 ADDON_LABELS: dict[str, str] = {
-    "design": "Дизайн под ключ",
     "content": "Тексты и наполнение",
     "integrations": "Интеграции (CRM, оплата)",
     "support": "Поддержка 3 месяца",

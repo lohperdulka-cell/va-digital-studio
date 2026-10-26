@@ -154,16 +154,15 @@ TRANSLATIONS: dict[str, str] = {
     "Разработка сайтов": "Web development",
     "Telegram-боты": "Telegram bots",
     "Автоматизация": "Automation",
-    "Дизайн": "Design",
     "Все услуги": "All services",
     "О нас": "About us",
     "Вопросы и ответы": "FAQ",
     "Контакты": "Contacts",
     "Политика конфиденциальности": "Privacy policy",
     "Все права защищены.": "All rights reserved.",
-    "Создаём сайты, Telegram-ботов и автоматизацию, которые работают на бизнес. Полный цикл: аналитика, дизайн, разработка, поддержка.": (
+    "Создаём сайты, Telegram-ботов и автоматизацию, которые работают на бизнес. Полный цикл: аналитика, разработка, поддержка.": (
         "We build websites, Telegram bots and automation that work for your "
-        "business. Full cycle: research, design, development, support."
+        "business. Full cycle: research, development, support."
     ),
     "Пн–Пт, 10:00–19:00 (МСК)": "Mon–Fri, 10:00–19:00 (MSK)",
 
@@ -171,8 +170,8 @@ TRANSLATIONS: dict[str, str] = {
     "VA Digital Studio — сайты, Telegram-боты, автоматизация": (
         "VA Digital Studio — websites, Telegram bots, automation"
     ),
-    "VA Digital Studio — разработка сайтов, Telegram-ботов, автоматизация и дизайн под ключ.": (
-        "VA Digital Studio — turnkey websites, Telegram bots, automation and design."
+    "VA Digital Studio — разработка сайтов, Telegram-ботов и автоматизация под ключ.": (
+        "VA Digital Studio — turnkey websites, Telegram bots and automation."
     ),
     "⚡ Цифровые продукты под ключ": "⚡ Turnkey digital products",
     "Превращаем идеи в": "We turn ideas into",
@@ -283,8 +282,8 @@ TRANSLATIONS: dict[str, str] = {
     "О студии ·": "About ·",
     "Небольшая команда с": "A small team with",
     "большим фокусом": "a sharp focus",
-    "VA Digital Studio — это разработка, дизайн и автоматизация в одном месте. Мы не распыляемся: берём проекты, в которых можем довести результат до конца.": (
-        "VA Digital Studio is development, design and automation in one place. "
+    "VA Digital Studio — это разработка сайтов, ботов и автоматизация в одном месте. Мы не распыляемся: берём проекты, в которых можем довести результат до конца.": (
+        "VA Digital Studio is web development, bots and automation in one place. "
         "We do not spread thin: we take projects we can see through to the end."
     ),
     "Понятные договорённости": "Clear agreements",
@@ -311,7 +310,7 @@ TRANSLATIONS: dict[str, str] = {
     "Автоматизация рутинных процессов и отчётов": (
         "Automation of routine processes and reports"
     ),
-    "UI/UX дизайн, брендинг и дизайн-системы": "UI/UX design, branding and design systems",
+    "Сквозная аналитика и отчётность": "End-to-end analytics and reporting",
     "Техническая поддержка и развитие продукта": "Technical support and product growth",
     "Знакомимся и уточняем задачу": "We get acquainted and clarify the task",
     "Готовим смету и план работ": "We prepare the estimate and the plan",
@@ -423,7 +422,7 @@ TRANSLATIONS: dict[str, str] = {
     "день": "day",
     "дня": "days",
     "дней": "days",
-    "Лендинг": "Landing page",
+    "Одностраничный сайт": "Single-page website",
     "Многостраничный сайт": "Multi-page website",
     "Telegram-бот": "Telegram bot",
     "Базовый объём": "Basic scope",
@@ -432,8 +431,7 @@ TRANSLATIONS: dict[str, str] = {
     "Спокойно, есть время": "Relaxed, no rush",
     "Стандартные сроки": "Standard timeline",
     "Срочно": "Urgent",
-    "Дизайн под ключ": "Turnkey design",
-    "Тексты и наполнение": "Copy and content",
+        "Тексты и наполнение": "Copy and content",
     "Интеграции (CRM, оплата)": "Integrations (CRM, payments)",
     "Поддержка 3 месяца": "3 months of support",
 
@@ -600,15 +598,16 @@ TRANSLATIONS: dict[str, str] = {
     "Оплата": "Payment",
     "Процесс": "Process",
     "Сколько стоит разработка сайта?": "How much does a website cost?",
-    "Стоимость зависит от объёма. Лендинг начинается от 5 000 ₽, многостраничный сайт — от 12 000 ₽. Точную смету фиксируем после обсуждения задачи: в калькуляторе можно получить ориентир за минуту.": (
-        "The cost depends on the scope. A landing page starts at 5,000 ₽, a "
-        "multi-page website at 12,000 ₽. We fix the exact estimate after we "
+    "Стоимость зависит от объёма. Одностраничный сайт начинается от 500 ₽, многостраничный — от 5 000 ₽. Точную смету фиксируем после обсуждения задачи: в калькуляторе можно получить ориентир за минуту.": (
+        "The cost depends on the scope. A single-page site starts at 500 ₽, a "
+        "multi-page website at 5,000 ₽. We fix the exact estimate after we "
         "discuss the task; the calculator gives you a guide in a minute."
     ),
     "Сколько времени занимает проект?": "How long does a project take?",
-    "Типовой лендинг — от 3 дней, Telegram-бот — от 2 дней, автоматизация скриптов — от 1 дня. Сроки фиксируем на старте и держим вас в курсе на каждом этапе.": (
-        "A typical landing page takes from 3 days, a Telegram bot from 2 days, "
-        "script automation from 1 day. We fix the timeline at the start and "
+    "Типовой одностраничный сайт — от 2 дней, многостраничный — от 7 дней, Telegram-бот — от 2 дней, автоматизация скриптов — от 1 дня. Сроки фиксируем на старте и держим вас в курсе на каждом этапе.": (
+        "A typical single-page site takes from 2 days, a multi-page site from "
+        "7 days, a Telegram bot from 2 days, script automation from 1 day. We fix "
+        "the timeline at the start and "
         "keep you informed at every stage."
     ),
     "Как проходит работа над проектом?": "How does the work go?",
@@ -756,7 +755,7 @@ TRANSLATIONS: dict[str, str] = {
     ),
     "в каталоге": "in the catalog",
     "разработка сайтов": "website development",
-    "автоматизация и дизайн": "automation and design",
+    "автоматизация": "automation",
 
     "чата": "chat",
     "Напишите сообщение…": "Write a message…",
