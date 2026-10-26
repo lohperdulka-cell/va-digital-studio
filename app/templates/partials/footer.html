@@ -7,8 +7,8 @@
           <span class="logo__text">Digital Studio</span>
         </a>
         <p class="footer__about">
-          Создаём сайты, Telegram-ботов и автоматизацию, которые работают на бизнес.
-          Полный цикл: аналитика, дизайн, разработка, поддержка.
+          {{ t('Создаём сайты, Telegram-ботов и автоматизацию, которые работают на бизнес.
+          Полный цикл: аналитика, дизайн, разработка, поддержка.') }}
         </p>
         <div class="footer__socials">
           <a class="footer__social" href="#" aria-label="Telegram" rel="noopener">✈️</a>
@@ -19,47 +19,47 @@
       </div>
 
       <div>
-        <h3 class="footer__title">Услуги</h3>
+        <h3 class="footer__title">{{ t('Услуги') }}</h3>
         <ul class="footer__list">
-          <li><a class="footer__link" href="/catalog?category=sites">Разработка сайтов</a></li>
-          <li><a class="footer__link" href="/catalog?category=bots">Telegram-боты</a></li>
-          <li><a class="footer__link" href="/catalog?category=automation">Автоматизация</a></li>
-          <li><a class="footer__link" href="/catalog?category=design">Дизайн</a></li>
-          <li><a class="footer__link" href="/catalog">Все услуги</a></li>
+          <li><a class="footer__link" href="/catalog?category=sites">{{ t('Разработка сайтов') }}</a></li>
+          <li><a class="footer__link" href="/catalog?category=bots">{{ t('Telegram-боты') }}</a></li>
+          <li><a class="footer__link" href="/catalog?category=automation">{{ t('Автоматизация') }}</a></li>
+          <li><a class="footer__link" href="/catalog?category=design">{{ t('Дизайн') }}</a></li>
+          <li><a class="footer__link" href="/catalog">{{ t('Все услуги') }}</a></li>
         </ul>
       </div>
 
       <div>
-        <h3 class="footer__title">О студии</h3>
+        <h3 class="footer__title">{{ t('О студии') }}</h3>
         <ul class="footer__list">
-          <li><a class="footer__link" href="/about">О нас</a></li>
-          <li><a class="footer__link" href="/portfolio">Портфолио</a></li>
-          <li><a class="footer__link" href="/news">Новости</a></li>
-          <li><a class="footer__link" href="/reviews">Отзывы</a></li>
-          <li><a class="footer__link" href="/faq">Вопросы и ответы</a></li>
-          <li><a class="footer__link" href="/calculator">Калькулятор</a></li>
-          <li><a class="footer__link" href="/profile">Личный кабинет</a></li>
+          <li><a class="footer__link" href="/about">{{ t('О нас') }}</a></li>
+          <li><a class="footer__link" href="/portfolio">{{ t('Портфолио') }}</a></li>
+          <li><a class="footer__link" href="/news">{{ t('Новости') }}</a></li>
+          <li><a class="footer__link" href="/reviews">{{ t('Отзывы') }}</a></li>
+          <li><a class="footer__link" href="/faq">{{ t('Вопросы и ответы') }}</a></li>
+          <li><a class="footer__link" href="/calculator">{{ t('Калькулятор') }}</a></li>
+          <li><a class="footer__link" href="/profile">{{ t('Личный кабинет') }}</a></li>
         </ul>
       </div>
 
       <div>
-        <h3 class="footer__title">Контакты</h3>
+        <h3 class="footer__title">{{ t('Контакты') }}</h3>
         <div class="footer__contact">
           <span>✉️ <a class="footer__link" href="mailto:{{ settings.support_email }}">{{ settings.support_email }}</a></span>
           <span>✈️ Telegram: <a class="footer__link" href="https://t.me/goldenhate" rel="noopener" target="_blank">@goldenhate</a></span>
-          <span>🕐 Пн–Пт, 10:00–19:00 (МСК)</span>
+          <span>🕐 {{ t('Пн–Пт, 10:00–19:00 (МСК)') }}</span>
         </div>
         <button type="button" class="btn btn--primary btn--block" data-support-open style="margin-top:18px">
-          💬 Служба поддержки
+          💬 {{ t('Служба поддержки') }}
         </button>
       </div>
     </div>
 
     <div class="footer__bottom">
-      <span>&copy; {{ settings.app_name }}. Все права защищены.</span>
+      <span>&copy; {{ settings.app_name }}. {{ t('Все права защищены.') }}</span>
       <span class="row" style="gap:16px">
-        <a class="footer__link" href="/about">Политика конфиденциальности</a>
-        <a class="footer__link" href="/support">Поддержка</a>
+        <a class="footer__link" href="/about">{{ t('Политика конфиденциальности') }}</a>
+        <a class="footer__link" href="/support">{{ t('Поддержка') }}</a>
       </span>
     </div>
   </div>

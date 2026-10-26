@@ -95,6 +95,34 @@
   margin-left: auto;
 }
 
+/* Language switch: a small pill next to the profile button. */
+.lang-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 11px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  white-space: nowrap;
+  flex: 0 0 auto;
+  transition: all var(--transition);
+}
+
+.lang-switch:hover {
+  color: var(--text);
+  border-color: var(--accent);
+}
+
+.lang-switch__icon { font-size: 0.95rem; line-height: 1; }
+
+@media (max-width: 480px) {
+  .lang-switch__code { display: none; }
+}
+
 /* User dropdown */
 .user-menu { position: relative; }
 

@@ -1,28 +1,28 @@
 {% extends "base.html" %}
-{% block title %}Каталог услуг · {{ app_name }}{% endblock %}
-{% block description %}Услуги VA Digital Studio: разработка сайтов, Telegram-боты, автоматизация и дизайн.{% endblock %}
+{% block title %}{{ t('Каталог услуг') }} · {{ app_name }}{% endblock %}
+{% block description %}{{ t('Услуги') }} VA Digital Studio: {{ t('разработка сайтов') }}, {{ t('Telegram-боты') }}, {{ t('автоматизация и дизайн') }}.{% endblock %}
 
 {% block content %}
 <div class="container">
-  <nav class="breadcrumbs" aria-label="Навигация">
-    <a href="/">Главная</a>
+  <nav class="breadcrumbs" aria-label="{{ t('Навигация') }}">
+    <a href="/">{{ t('Главная') }}</a>
     <span class="breadcrumbs__sep">/</span>
-    <span>Каталог</span>
+    <span>{{ t('Каталог') }}</span>
   </nav>
 
   <div class="section-head">
-    <span class="section-head__eyebrow">Каталог</span>
-    <h1 class="section-head__title">Услуги студии</h1>
+    <span class="section-head__eyebrow">{{ t('Каталог') }}</span>
+    <h1 class="section-head__title">{{ t('Услуги студии') }}</h1>
     <p class="section-head__subtitle">
-      {{ total }} {{ total | plural('услуга', 'услуги', 'услуг') }} в каталоге.
-      Выберите направление или откройте карточку, чтобы увидеть состав работ и сроки.
+      {{ total }} {{ total | plural('услуга', 'услуги', 'услуг') }} {{ t('в каталоге') }}.
+      {{ t('Выберите направление или откройте карточку, чтобы увидеть состав работ и сроки.') }}
     </p>
   </div>
 
   {# Filters are plain links, so they work without JavaScript. #}
   <div class="filters">
     <div class="filters__group">
-      <a class="filter-pill {% if not active_category %}is-active{% endif %}" href="/catalog">Все</a>
+      <a class="filter-pill {% if not active_category %}is-active{% endif %}" href="/catalog">{{ t('Все') }}</a>
       {% for category in categories %}
         <a class="filter-pill {% if active_category == category.value %}is-active{% endif %}"
            href="/catalog?category={{ category.value }}">
@@ -56,9 +56,9 @@
           <div class="card__footer">
             <span>
               <strong>{{ service.price_display }}</strong>
-              <span class="dim tiny">· {{ service.duration_days }} дн.</span>
+              <span class="dim tiny">· {{ service.duration_days }} {{ t('дн.') }}</span>
             </span>
-            <a class="btn btn--cyan btn--sm" href="/catalog/{{ service.slug }}">Подробнее</a>
+            <a class="btn btn--cyan btn--sm" href="/catalog/{{ service.slug }}">{{ t('Подробнее') }}</a>
           </div>
         </article>
       {% endfor %}
@@ -66,15 +66,15 @@
   {% else %}
     <div class="empty">
       <div class="empty__icon" aria-hidden="true">🔍</div>
-      <h2 class="empty__title">Ничего не найдено</h2>
+      <h2 class="empty__title">{{ t('Ничего не найдено') }}</h2>
       <p class="empty__text">
         {% if active_category %}
-          В этой категории пока нет услуг.
+          {{ t('В этой категории пока нет услуг.') }}
         {% else %}
-          Каталог наполняется.
+          {{ t('Каталог наполняется.') }}
         {% endif %}
       </p>
-      <a class="btn btn--primary" href="/catalog">Показать все услуги</a>
+      <a class="btn btn--primary" href="/catalog">{{ t('Показать все услуги') }}</a>
     </div>
   {% endif %}
 </div>

@@ -5,20 +5,27 @@
       <span class="logo__text">Digital Studio</span>
     </a>
 
-    <nav class="header__nav" aria-label="Основная навигация">
-      <a class="header__link {% if path == '/' %}is-active{% endif %}" href="/">Главная</a>
-      <a class="header__link {% if path.startswith('/catalog') %}is-active{% endif %}" href="/catalog">Каталог</a>
-      <a class="header__link {% if path.startswith('/portfolio') %}is-active{% endif %}" href="/portfolio">Портфолио</a>
-      <a class="header__link {% if path.startswith('/news') %}is-active{% endif %}" href="/news">Новости</a>
-      <a class="header__link {% if path == '/calculator' %}is-active{% endif %}" href="/calculator">Калькулятор</a>
+    <nav class="header__nav" aria-label="{{ t("Основная навигация") }}">
+      <a class="header__link {% if path == '/' %}is-active{% endif %}" href="/">{{ t("Главная") }}</a>
+      <a class="header__link {% if path.startswith('/catalog') %}is-active{% endif %}" href="/catalog">{{ t("Каталог") }}</a>
+      <a class="header__link {% if path.startswith('/portfolio') %}is-active{% endif %}" href="/portfolio">{{ t("Портфолио") }}</a>
+      <a class="header__link {% if path.startswith('/news') %}is-active{% endif %}" href="/news">{{ t("Новости") }}</a>
+      <a class="header__link {% if path == '/calculator' %}is-active{% endif %}" href="/calculator">{{ t("Калькулятор") }}</a>
       <a class="header__link {% if path.startswith('/faq') %}is-active{% endif %}" href="/faq">FAQ</a>
-      <a class="header__link {% if path == '/about' %}is-active{% endif %}" href="/about">О студии</a>
+      <a class="header__link {% if path == '/about' %}is-active{% endif %}" href="/about">{{ t("О студии") }}</a>
       {% if is_admin %}
-        <a class="header__link {% if path.startswith('/dashboard') %}is-active{% endif %}" href="/dashboard">Дашборд</a>
+        <a class="header__link {% if path.startswith('/dashboard') %}is-active{% endif %}" href="/dashboard">{{ t("Дашборд") }}</a>
       {% endif %}
     </nav>
 
     <div class="header__actions">
+      <a class="lang-switch" href="{{ locale_switch_url }}"
+         hreflang="{{ other_locale() }}" rel="alternate"
+         title="{{ t('Сменить язык') }}" aria-label="{{ t('Сменить язык') }}">
+        <span class="lang-switch__icon" aria-hidden="true">🌐</span>
+        <span class="lang-switch__code">{{ 'EN' if locale == 'ru' else 'RU' }}</span>
+      </a>
+
       {% if current_user %}
         <div class="user-menu" data-user-menu>
           <button type="button" class="user-menu__trigger" data-user-menu-trigger
@@ -38,24 +45,24 @@
               <div><strong>{{ current_user.display_name }}</strong></div>
               <div class="user-menu__email">{{ current_user.email }}</div>
             </div>
-            <a class="user-menu__item" href="/profile">👤 Профиль</a>
+            <a class="user-menu__item" href="/profile">👤 {{ t("Профиль") }}</a>
             {% if is_admin %}
-              <a class="user-menu__item" href="/dashboard">🛠 Дашборд</a>
+              <a class="user-menu__item" href="/dashboard">🛠 {{ t("Дашборд") }}</a>
             {% endif %}
-            <a class="user-menu__item" href="/profile/orders">📦 Мои заказы</a>
+            <a class="user-menu__item" href="/profile/orders">📦 {{ t("Мои заказы") }}</a>
             <form method="post" action="/auth/logout">
               <input type="hidden" name="{{ csrf_field_name }}" value="{{ csrf_token }}">
-              <button type="submit" class="user-menu__item">🚪 Выйти</button>
+              <button type="submit" class="user-menu__item">🚪 {{ t("Выйти") }}</button>
             </form>
           </div>
         </div>
       {% else %}
         <a class="btn btn--primary btn--sm" href="/auth/login?next={{ next_url | urlencode }}">
-          Войти
+          {{ t('Войти') }}
         </a>
       {% endif %}
 
-      <button type="button" class="burger" data-burger aria-label="Открыть меню"
+      <button type="button" class="burger" data-burger aria-label="{{ t("Открыть меню") }}"
               aria-expanded="false" aria-controls="mobile-drawer">
         <span class="burger__box" aria-hidden="true">
           <span class="burger__line"></span>

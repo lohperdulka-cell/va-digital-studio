@@ -1,47 +1,47 @@
 {% extends "dashboard/base.html" %}
-{% block dash_title %}Обзор{% endblock %}
+{% block dash_title %}{{ t('Обзор') }}{% endblock %}
 
 {% block dash_content %}
 <div class="dash__head">
-  <h1 class="dash__title">Обзор</h1>
-  <a class="btn btn--primary btn--sm" href="/dashboard/orders">Все заказы</a>
+  <h1 class="dash__title">{{ t('Обзор') }}</h1>
+  <a class="btn btn--primary btn--sm" href="/dashboard/orders">{{ t('Все заказы') }}</a>
 </div>
 
 <div class="stats-grid">
   <div class="stat-card">
     <div class="stat-card__value">{{ stats.orders_total }}</div>
-    <div class="stat-card__label">Заказов всего</div>
+    <div class="stat-card__label">{{ t('Заказов всего') }}</div>
   </div>
   <div class="stat-card">
     <div class="stat-card__value gradient-text">{{ stats.orders_active }}</div>
-    <div class="stat-card__label">В работе</div>
+    <div class="stat-card__label">{{ t('В работе') }}</div>
   </div>
   <div class="stat-card">
     <div class="stat-card__value">{{ stats.orders_done }}</div>
-    <div class="stat-card__label">Завершено и отменено</div>
+    <div class="stat-card__label">{{ t('Завершено и отменено') }}</div>
   </div>
   <div class="stat-card">
     <div class="stat-card__value">{{ stats.chats_unread }}</div>
-    <div class="stat-card__label">Непрочитанных сообщений</div>
+    <div class="stat-card__label">{{ t('Непрочитанных сообщений') }}</div>
   </div>
   <div class="stat-card">
     <div class="stat-card__value">{{ stats.tickets_open }}</div>
-    <div class="stat-card__label">Открытых обращений</div>
+    <div class="stat-card__label">{{ t('Открытых обращений') }}</div>
   </div>
   <div class="stat-card">
     <div class="stat-card__value">{{ stats.revenue | money }}</div>
-    <div class="stat-card__label">Выручка по завершённым</div>
+    <div class="stat-card__label">{{ t('Выручка по завершённым') }}</div>
   </div>
   <div class="stat-card">
     <div class="stat-card__value">{{ stats.clients }}</div>
-    <div class="stat-card__label">Пользователей</div>
+    <div class="stat-card__label">{{ t('Пользователей') }}</div>
   </div>
 </div>
 
 <div class="card">
   <div class="dash__head">
-    <h2 style="font-size:1.1rem;margin:0">Последние заказы</h2>
-    <a class="btn btn--ghost btn--sm" href="/dashboard/orders">Смотреть все</a>
+    <h2 style="font-size:1.1rem;margin:0">{{ t('Последние заказы') }}</h2>
+    <a class="btn btn--ghost btn--sm" href="/dashboard/orders">{{ t('Смотреть все') }}</a>
   </div>
 
   {% if recent_orders %}
@@ -49,11 +49,11 @@
       <table class="table">
         <thead>
           <tr>
-            <th>№</th>
-            <th>Клиент</th>
-            <th>Заказ</th>
-            <th>Статус</th>
-            <th>Цена</th>
+            <th>{{ t('№') }}</th>
+            <th>{{ t('Клиент') }}</th>
+            <th>{{ t('Заказ') }}</th>
+            <th>{{ t('Статус') }}</th>
+            <th>{{ t('Цена') }}</th>
             <th></th>
           </tr>
         </thead>
@@ -76,21 +76,21 @@
                 {% endif %}
               </td>
               <td>{{ order.price_final | money }}</td>
-              <td><a class="btn btn--ghost btn--sm" href="/dashboard/orders/{{ order.id }}">Открыть</a></td>
+              <td><a class="btn btn--ghost btn--sm" href="/dashboard/orders/{{ order.id }}">{{ t('Открыть') }}</a></td>
             </tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
   {% else %}
-    <p class="dim small" style="margin:0">Заказов пока нет.</p>
+    <p class="dim small" style="margin:0">{{ t('Заказов пока нет.') }}</p>
   {% endif %}
 </div>
 
 <div class="card" style="margin-top:20px">
   <div class="dash__head">
-    <h2 style="font-size:1.1rem;margin:0">Открытые обращения</h2>
-    <a class="btn btn--ghost btn--sm" href="/dashboard/support">Все обращения</a>
+    <h2 style="font-size:1.1rem;margin:0">{{ t('Открытые обращения') }}</h2>
+    <a class="btn btn--ghost btn--sm" href="/dashboard/support">{{ t('Все обращения') }}</a>
   </div>
 
   {% if open_tickets %}
@@ -106,7 +106,7 @@
       {% endfor %}
     </ul>
   {% else %}
-    <p class="dim small" style="margin:0">Открытых обращений нет.</p>
+    <p class="dim small" style="margin:0">{{ t('Открытых обращений нет.') }}</p>
   {% endif %}
 </div>
 {% endblock %}

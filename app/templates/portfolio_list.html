@@ -1,21 +1,21 @@
 {% extends "base.html" %}
-{% block title %}Портфолио · {{ app_name }}{% endblock %}
-{% block description %}Кейсы VA Digital Studio: сайты, Telegram-боты и автоматизация с реальными результатами.{% endblock %}
+{% block title %}{{ t('Портфолио ·') }} {{ app_name }}{% endblock %}
+{% block description %}{{ t('Кейсы VA Digital Studio: сайты, Telegram-боты и автоматизация с реальными результатами.') }}{% endblock %}
 
 {% block content %}
 <div class="container">
-  <nav class="breadcrumbs" aria-label="Навигация">
-    <a href="/">Главная</a>
+  <nav class="breadcrumbs" aria-label="{{ t('Навигация') }}">
+    <a href="/">{{ t('Главная') }}</a>
     <span class="breadcrumbs__sep">/</span>
-    <span>Портфолио</span>
+    <span>{{ t('Портфолио') }}</span>
   </nav>
 
   <div class="section-head">
-    <span class="section-head__eyebrow">Портфолио</span>
-    <h1 class="section-head__title">Кейсы и результаты</h1>
+    <span class="section-head__eyebrow">{{ t('Портфолио') }}</span>
+    <h1 class="section-head__title">{{ t('Кейсы и результаты') }}</h1>
     <p class="section-head__subtitle">
       {{ total }} {{ total | plural('проект', 'проекта', 'проектов') }} —
-      от лендингов до автоматизации. Показываем задачу, решение и результат.
+      {{ t('от лендингов до автоматизации. Показываем задачу, решение и результат.') }}
     </p>
   </div>
 
@@ -25,7 +25,7 @@
         <article class="card card--hover">
           <div class="card__header">
             <span class="card__icon" aria-hidden="true">{{ case.cover_emoji }}</span>
-            {% if case.is_featured %}<span class="badge badge--accent">Топ</span>{% endif %}
+            {% if case.is_featured %}<span class="badge badge--accent">{{ t('Топ') }}</span>{% endif %}
           </div>
           <h2 class="card__title">
             <a href="/portfolio/{{ case.slug }}">{{ case.title }}</a>
@@ -43,14 +43,14 @@
             </div>
           {% endif %}
           <div class="card__footer">
-            <a class="btn btn--cyan btn--sm" href="/portfolio/{{ case.slug }}">Смотреть кейс</a>
+            <a class="btn btn--cyan btn--sm" href="/portfolio/{{ case.slug }}">{{ t('Смотреть кейс') }}</a>
           </div>
         </article>
       {% endfor %}
     </div>
 
     {% if total_pages > 1 %}
-      <nav class="pagination" aria-label="Постраничная навигация">
+      <nav class="pagination" aria-label="{{ t('Постраничная навигация') }}">
         <a class="pagination__link {% if page <= 1 %}is-disabled{% endif %}"
            href="/portfolio?page={{ page - 1 }}">←</a>
         {% for number in range(1, total_pages + 1) %}
@@ -64,9 +64,9 @@
   {% else %}
     <div class="empty">
       <div class="empty__icon" aria-hidden="true">🗂</div>
-      <h2 class="empty__title">Кейсы скоро появятся</h2>
-      <p class="empty__text">Мы готовим подборку выполненных проектов. Пока посмотрите услуги студии.</p>
-      <a class="btn btn--primary" href="/catalog">Смотреть услуги</a>
+      <h2 class="empty__title">{{ t('Кейсы скоро появятся') }}</h2>
+      <p class="empty__text">{{ t('Мы готовим подборку выполненных проектов. Пока посмотрите услуги студии.') }}</p>
+      <a class="btn btn--primary" href="/catalog">{{ t('Смотреть услуги') }}</a>
     </div>
   {% endif %}
 </div>

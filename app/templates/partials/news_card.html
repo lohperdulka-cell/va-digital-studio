@@ -18,11 +18,11 @@
             data-news-id="{{ item.id }}"
             data-liked="{{ 'true' if item.liked_by(current_user.id if current_user else none) else 'false' }}"
             aria-pressed="{{ 'true' if item.liked_by(current_user.id if current_user else none) else 'false' }}"
-            aria-label="Поставить лайк">
+            aria-label="{{ t('Поставить лайк') }}">
       <span class="like-btn__icon" aria-hidden="true">♥</span>
       <span data-like-count>{{ item.likes_count }}</span>
     </button>
 
-    <a class="btn btn--ghost btn--sm" href="/news/{{ item.slug }}">Читать</a>
+    <a class="btn btn--ghost btn--sm" href="/news/{{ item.slug }}">{{ t('Читать') }}</a>
   </div>
 </article>

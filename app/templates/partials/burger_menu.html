@@ -2,13 +2,13 @@
 <div class="drawer-backdrop" data-drawer-backdrop hidden></div>
 
 <aside class="drawer" id="mobile-drawer" data-drawer role="dialog" aria-modal="true"
-       aria-label="Меню навигации" hidden>
+       aria-label="{{ t('Меню навигации') }}" hidden>
   <div class="drawer__head">
     <a class="logo" href="/">
       <span class="logo__mark" aria-hidden="true">VA</span>
       <span class="logo__text">Digital Studio</span>
     </a>
-    <button type="button" class="modal__close" data-drawer-close aria-label="Закрыть меню">&times;</button>
+    <button type="button" class="modal__close" data-drawer-close aria-label="{{ t('Закрыть меню') }}">&times;</button>
   </div>
 
   {% if current_user %}
@@ -27,37 +27,42 @@
     </div>
   {% endif %}
 
-  <a class="drawer__link {% if path == '/' %}is-active{% endif %}" href="/">🏠 Главная</a>
-  <a class="drawer__link {% if path.startswith('/catalog') %}is-active{% endif %}" href="/catalog">🧩 Каталог услуг</a>
-  <a class="drawer__link {% if path.startswith('/portfolio') %}is-active{% endif %}" href="/portfolio">🗂 Портфолио</a>
-  <a class="drawer__link {% if path.startswith('/news') %}is-active{% endif %}" href="/news">📰 Новости</a>
-  <a class="drawer__link {% if path == '/calculator' %}is-active{% endif %}" href="/calculator">🧮 Калькулятор</a>
-  <a class="drawer__link {% if path.startswith('/reviews') %}is-active{% endif %}" href="/reviews">⭐ Отзывы</a>
+  <a class="drawer__link {% if path == '/' %}is-active{% endif %}" href="/">🏠 {{ t('Главная') }}</a>
+  <a class="drawer__link {% if path.startswith('/catalog') %}is-active{% endif %}" href="/catalog">🧩 {{ t('Каталог услуг') }}</a>
+  <a class="drawer__link {% if path.startswith('/portfolio') %}is-active{% endif %}" href="/portfolio">🗂 {{ t('Портфолио') }}</a>
+  <a class="drawer__link {% if path.startswith('/news') %}is-active{% endif %}" href="/news">📰 {{ t('Новости') }}</a>
+  <a class="drawer__link {% if path == '/calculator' %}is-active{% endif %}" href="/calculator">🧮 {{ t('Калькулятор') }}</a>
+  <a class="drawer__link {% if path.startswith('/reviews') %}is-active{% endif %}" href="/reviews">⭐ {{ t('Отзывы') }}</a>
   <a class="drawer__link {% if path.startswith('/faq') %}is-active{% endif %}" href="/faq">❓ FAQ</a>
-  <a class="drawer__link {% if path == '/about' %}is-active{% endif %}" href="/about">✨ О студии</a>
+  <a class="drawer__link {% if path == '/about' %}is-active{% endif %}" href="/about">✨ {{ t('О студии') }}</a>
 
   <div class="drawer__divider"></div>
 
   {% if current_user %}
-    <a class="drawer__link {% if path == '/profile' %}is-active{% endif %}" href="/profile">👤 Профиль</a>
-    <a class="drawer__link" href="/profile/orders">📦 Мои заказы</a>
+    <a class="drawer__link {% if path == '/profile' %}is-active{% endif %}" href="/profile">👤 {{ t('Профиль') }}</a>
+    <a class="drawer__link" href="/profile/orders">📦 {{ t('Мои заказы') }}</a>
     {% if is_admin %}
-      <a class="drawer__link {% if path.startswith('/dashboard') %}is-active{% endif %}" href="/dashboard">🛠 Дашборд</a>
+      <a class="drawer__link {% if path.startswith('/dashboard') %}is-active{% endif %}" href="/dashboard">🛠 {{ t('Дашборд') }}</a>
     {% endif %}
   {% else %}
-    <a class="drawer__link" href="/auth/login?next={{ next_url | urlencode }}">🔑 Войти</a>
+    <a class="drawer__link" href="/auth/login?next={{ next_url | urlencode }}">🔑 {{ t('Войти') }}</a>
   {% endif %}
 
   <div class="drawer__divider"></div>
 
   <button type="button" class="btn btn--cyan btn--block" data-support-open>
-    💬 Служба поддержки
+    💬 {{ t('Служба поддержки') }}
   </button>
+
+  <a class="btn btn--ghost btn--block" href="{{ locale_switch_url }}" style="margin-top:12px"
+     hreflang="{{ other_locale() }}" rel="alternate">
+    🌐 {{ t('Язык') }}: {{ 'English' if locale == 'ru' else 'Русский' }}
+  </a>
 
   {% if current_user %}
     <form method="post" action="/auth/logout" style="margin-top:12px">
       <input type="hidden" name="{{ csrf_field_name }}" value="{{ csrf_token }}">
-      <button type="submit" class="btn btn--ghost btn--block">🚪 Выйти</button>
+      <button type="submit" class="btn btn--ghost btn--block">🚪 {{ t('Выйти') }}</button>
     </form>
   {% endif %}
 </aside>

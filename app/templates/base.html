@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="{{ locale }}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}{{ app_name }}{% endblock %}</title>
-  <meta name="description" content="{% block description %}VA Digital Studio — разработка сайтов, Telegram-ботов, автоматизация и дизайн под ключ.{% endblock %}">
+  <meta name="description" content="{% block description %}{{ t("VA Digital Studio — разработка сайтов, Telegram-ботов, автоматизация и дизайн под ключ.") }}{% endblock %}">
   {# The CSRF token is exposed for fetch() calls; the cookie itself stays httponly. #}
   <meta name="csrf-token" content="{{ csrf_token }}">
   <meta name="theme-color" content="#070a18">
@@ -20,7 +20,7 @@
   {% block head_extra %}{% endblock %}
 </head>
 <body>
-  <a class="skip-link" href="#main">Перейти к содержимому</a>
+  <a class="skip-link" href="#main">{{ t("Перейти к содержимому") }}</a>
 
   {% include "partials/header.html" %}
   {% include "partials/burger_menu.html" %}
@@ -29,7 +29,7 @@
     {% for item in flash_messages %}
       <div class="flash flash--{{ item.level }}">
         <span>{{ item.message }}</span>
-        <button type="button" class="flash__close" data-flash-close aria-label="Закрыть">&times;</button>
+        <button type="button" class="flash__close" data-flash-close aria-label="{{ t("Закрыть") }}">&times;</button>
       </div>
     {% endfor %}
   </div>

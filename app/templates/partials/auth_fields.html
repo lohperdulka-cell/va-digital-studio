@@ -43,11 +43,11 @@
 
 {% macro google_button(next_url) -%}
   <a class="btn btn--ghost btn--block" href="/auth/google?next={{ next_url | urlencode }}">
-    <span aria-hidden="true">G</span> Продолжить с Google
+    <span aria-hidden="true">G</span> {{ t('Продолжить с Google') }}
   </a>
 {%- endmacro %}
 
 
-{% macro divider(text="или") -%}
-  <div class="auth__divider" role="separator" aria-label="{{ text }}"><span>{{ text }}</span></div>
+{% macro divider(text=None) -%}
+  <div class="auth__divider" role="separator" aria-label="{{ text or t('или') }}"><span>{{ text or t('или') }}</span></div>
 {%- endmacro %}

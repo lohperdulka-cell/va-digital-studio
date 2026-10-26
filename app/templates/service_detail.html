@@ -4,10 +4,10 @@
 
 {% block content %}
 <div class="container">
-  <nav class="breadcrumbs" aria-label="Навигация">
-    <a href="/">Главная</a>
+  <nav class="breadcrumbs" aria-label="{{ t('Навигация') }}">
+    <a href="/">{{ t('Главная') }}</a>
     <span class="breadcrumbs__sep">/</span>
-    <a href="/catalog">Каталог</a>
+    <a href="/catalog">{{ t('Каталог') }}</a>
     <span class="breadcrumbs__sep">/</span>
     <a href="/catalog?category={{ service.category.value }}">{{ service.category_label }}</a>
     <span class="breadcrumbs__sep">/</span>
@@ -26,7 +26,7 @@
 
       {% if service.description %}
         <div class="card" style="margin-top:24px">
-          <h2 style="font-size:1.15rem">Состав работ</h2>
+          <h2 style="font-size:1.15rem">{{ t('Состав работ') }}</h2>
           {# Admin-authored content, sanitised on save (app/security/sanitize.py). #}
           <div class="news-body">{{ service.description | safe }}</div>
         </div>
@@ -34,7 +34,7 @@
 
       {% if service.tags %}
         <div style="margin-top:24px">
-          <h2 style="font-size:1.05rem">Технологии и теги</h2>
+          <h2 style="font-size:1.05rem">{{ t('Технологии и теги') }}</h2>
           <div class="chips">
             {% for tag in service.tags %}<span class="chip">{{ tag }}</span>{% endfor %}
           </div>
@@ -45,20 +45,20 @@
     <aside class="detail-side">
       <div class="card">
         <div class="price-tag gradient-text">{{ service.price_display }}</div>
-        <p class="small muted">Итоговая стоимость зависит от объёма задач и согласуется в чате.</p>
+        <p class="small muted">{{ t('Итоговая стоимость зависит от объёма задач и согласуется в чате.') }}</p>
 
         <ul class="meta-list">
           <li class="meta-list__row">
-            <span class="meta-list__label">Категория</span>
+            <span class="meta-list__label">{{ t('Категория') }}</span>
             <span class="meta-list__value">{{ service.category_label }}</span>
           </li>
           <li class="meta-list__row">
-            <span class="meta-list__label">Срок</span>
-            <span class="meta-list__value">~{{ service.duration_days }} дней</span>
+            <span class="meta-list__label">{{ t('Срок') }}</span>
+            <span class="meta-list__value">~{{ service.duration_days }} {{ t('дней') }}</span>
           </li>
           <li class="meta-list__row">
-            <span class="meta-list__label">Формат</span>
-            <span class="meta-list__value">Обсудим в чате</span>
+            <span class="meta-list__label">{{ t('Формат') }}</span>
+            <span class="meta-list__value">{{ t('Обсудим в чате') }}</span>
           </li>
         </ul>
 
@@ -68,26 +68,26 @@
           <input type="hidden" name="title" value="{{ service.title }}">
           <input type="hidden" name="next" value="/catalog/{{ service.slug }}">
           <button type="submit" class="btn btn--primary btn--block btn--lg">
-            Заказать
+            {{ t('Заказать') }}
           </button>
         </form>
 
         <button type="button" class="btn btn--ghost btn--block" data-support-open style="margin-top:10px">
-          Задать вопрос
+          {{ t('Задать вопрос') }}
         </button>
 
         <p class="tiny dim center" style="margin:14px 0 0">
-          Создадим черновик заказа и откроем чат с менеджером
+          {{ t('Создадим черновик заказа и откроем чат с менеджером') }}
         </p>
       </div>
 
       <div class="card card--flat">
-        <h2 style="font-size:1rem">Как мы работаем</h2>
+        <h2 style="font-size:1rem">{{ t('Как мы работаем') }}</h2>
         <ul class="small muted" style="margin:0;padding-left:1.1em">
-          <li>Обсуждаем задачу в чате по заказу</li>
-          <li>Фиксируем состав работ и стоимость</li>
-          <li>Разрабатываем и показываем промежуточные результаты</li>
-          <li>Сдаём проект и остаёмся на поддержке</li>
+          <li>{{ t('Обсуждаем задачу в чате по заказу') }}</li>
+          <li>{{ t('Фиксируем состав работ и стоимость') }}</li>
+          <li>{{ t('Разрабатываем и показываем промежуточные результаты') }}</li>
+          <li>{{ t('Сдаём проект и остаёмся на поддержке') }}</li>
         </ul>
       </div>
     </aside>
@@ -96,7 +96,7 @@
   {% if related %}
     <section class="section">
       <div class="section-head">
-        <h2 class="section-head__title">Похожие услуги</h2>
+        <h2 class="section-head__title">{{ t('Похожие услуги') }}</h2>
       </div>
       <div class="grid grid--cards">
         {% for item in related %}
@@ -109,7 +109,7 @@
             <p class="card__body">{{ item.short_description }}</p>
             <div class="card__footer">
               <strong>{{ item.price_display }}</strong>
-              <a class="btn btn--cyan btn--sm" href="/catalog/{{ item.slug }}">Подробнее</a>
+              <a class="btn btn--cyan btn--sm" href="/catalog/{{ item.slug }}">{{ t('Подробнее') }}</a>
             </div>
           </article>
         {% endfor %}

@@ -1,24 +1,24 @@
 {% extends "base.html" %}
-{% block title %}Отзывы · {{ app_name }}{% endblock %}
-{% block description %}Отзывы клиентов VA Digital Studio о сайтах, ботах и автоматизации.{% endblock %}
+{% block title %}{{ t('Отзывы ·') }} {{ app_name }}{% endblock %}
+{% block description %}{{ t('Отзывы клиентов VA Digital Studio о сайтах, ботах и автоматизации.') }}{% endblock %}
 
 {% block content %}
 <div class="container">
-  <nav class="breadcrumbs" aria-label="Навигация">
-    <a href="/">Главная</a>
+  <nav class="breadcrumbs" aria-label="{{ t('Навигация') }}">
+    <a href="/">{{ t('Главная') }}</a>
     <span class="breadcrumbs__sep">/</span>
-    <span>Отзывы</span>
+    <span>{{ t('Отзывы') }}</span>
   </nav>
 
   <div class="section-head">
-    <span class="section-head__eyebrow">Отзывы</span>
-    <h1 class="section-head__title">Что говорят клиенты</h1>
+    <span class="section-head__eyebrow">{{ t('Отзывы') }}</span>
+    <h1 class="section-head__title">{{ t('Что говорят клиенты') }}</h1>
     <p class="section-head__subtitle">
       {% if summary.count %}
         {{ summary.count }} {{ summary.count | plural('отзыв', 'отзыва', 'отзывов') }},
-        средняя оценка ★ {{ summary.average_display }} из 5.
+        {{ t('средняя оценка') }} ★ {{ summary.average_display }} {{ t('из 5.') }}
       {% else %}
-        Пока нет опубликованных отзывов — станьте первым.
+        {{ t('Пока нет опубликованных отзывов — станьте первым.') }}
       {% endif %}
     </p>
   </div>
@@ -36,7 +36,7 @@
                   </div>
                   <div class="tiny dim">{{ review.created_at | date_ru }}</div>
                 </div>
-                <div class="rating" aria-label="Оценка {{ review.rating }} из 5">
+                <div class="rating" aria-label="{{ t('Оценка {rating} из 5', rating=review.rating) }}">
                   {% for _ in range(review.rating) %}★{% endfor %}
                 </div>
               </div>
@@ -47,34 +47,34 @@
       {% else %}
         <div class="empty">
           <div class="empty__icon" aria-hidden="true">💬</div>
-          <h2 class="empty__title">Отзывов пока нет</h2>
-          <p class="empty__text">Оставьте свой — он появится на сайте после проверки модератором.</p>
+          <h2 class="empty__title">{{ t('Отзывов пока нет') }}</h2>
+          <p class="empty__text">{{ t('Оставьте свой — он появится на сайте после проверки модератором.') }}</p>
         </div>
       {% endif %}
     </div>
 
     <aside class="detail-side">
       <div class="card">
-        <h2 style="font-size:1.05rem">Оставить отзыв</h2>
+        <h2 style="font-size:1.05rem">{{ t('Оставить отзыв') }}</h2>
         <form method="post" action="/reviews">
           <input type="hidden" name="{{ csrf_field_name }}" value="{{ csrf_token }}">
 
           <label class="field" style="margin-top:12px">
-            <span class="field__label">Имя *</span>
+            <span class="field__label">{{ t('Имя *') }}</span>
             <input class="input" type="text" name="author_name" required minlength="2" maxlength="120"
                    value="{{ form.get('author_name', '') }}">
             {% if errors.get('author_name') %}<span class="field__error">{{ errors['author_name'] }}</span>{% endif %}
           </label>
 
           <label class="field" style="margin-top:12px">
-            <span class="field__label">Компания или роль</span>
+            <span class="field__label">{{ t('Компания или роль') }}</span>
             <input class="input" type="text" name="author_role" maxlength="160"
-                   value="{{ form.get('author_role', '') }}" placeholder="Студия ремонта">
+                   value="{{ form.get('author_role', '') }}" placeholder="{{ t('Студия ремонта') }}">
             {% if errors.get('author_role') %}<span class="field__error">{{ errors['author_role'] }}</span>{% endif %}
           </label>
 
           <label class="field" style="margin-top:12px">
-            <span class="field__label">Оценка *</span>
+            <span class="field__label">{{ t('Оценка *') }}</span>
             <select class="input" name="rating" required>
               {% for value in [5, 4, 3, 2, 1] %}
                 <option value="{{ value }}" {% if form.get('rating', 5) | int == value %}selected{% endif %}>
@@ -86,17 +86,17 @@
           </label>
 
           <label class="field" style="margin-top:12px">
-            <span class="field__label">Текст отзыва *</span>
+            <span class="field__label">{{ t('Текст отзыва *') }}</span>
             <textarea class="input" name="body" rows="5" required minlength="20" maxlength="1500"
-                      placeholder="Что понравилось, как прошла работа…">{{ form.get('body', '') }}</textarea>
+                      placeholder="{{ t('Что понравилось, как прошла работа…') }}">{{ form.get('body', '') }}</textarea>
             {% if errors.get('body') %}<span class="field__error">{{ errors['body'] }}</span>{% endif %}
           </label>
 
           <button class="btn btn--primary btn--block" type="submit" style="margin-top:16px">
-            Отправить отзыв
+            {{ t('Отправить отзыв') }}
           </button>
           <p class="tiny dim center" style="margin:10px 0 0">
-            Отзыв появится на сайте после проверки модератором.
+            {{ t('Отзыв появится на сайте после проверки модератором.') }}
           </p>
         </form>
       </div>

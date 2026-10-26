@@ -1,16 +1,16 @@
 {% extends "dashboard/base.html" %}
-{% block dash_title %}Отзывы{% endblock %}
+{% block dash_title %}{{ t('Отзывы') }}{% endblock %}
 
 {% block dash_content %}
 <div class="dash__head">
-  <h1 class="dash__title">Отзывы</h1>
+  <h1 class="dash__title">{{ t('Отзывы') }}</h1>
   <div class="row" style="gap:12px">
-    <span class="badge">{{ summary.count }} опубликовано</span>
+    <span class="badge">{{ summary.count }} {{ t('опубликовано') }}</span>
     <span class="badge badge--accent">★ {{ summary.average_display }}</span>
   </div>
 </div>
 
-<h2 style="font-size:1.1rem;margin:0 0 12px">На модерации ({{ pending | length }})</h2>
+<h2 style="font-size:1.1rem;margin:0 0 12px">{{ t('На модерации') }} ({{ pending | length }})</h2>
 {% if pending %}
   <div class="stack">
     {% for review in pending %}
@@ -22,7 +22,7 @@
             </div>
             <div class="tiny dim">{{ review.created_at | datetime_ru }}</div>
           </div>
-          <div class="rating" aria-label="Оценка {{ review.rating }} из 5">
+          <div class="rating" aria-label="{{ t('Оценка') }} {{ review.rating }} {{ t('из 5') }}">
             {% for _ in range(review.rating) %}★{% endfor %}
           </div>
         </div>
@@ -30,12 +30,12 @@
         <div class="row" style="gap:10px">
           <form method="post" action="/dashboard/reviews/{{ review.id }}/approve">
             <input type="hidden" name="{{ csrf_field_name }}" value="{{ csrf_token }}">
-            <button class="btn btn--primary btn--sm" type="submit">Опубликовать</button>
+            <button class="btn btn--primary btn--sm" type="submit">{{ t('Опубликовать') }}</button>
           </form>
           <form method="post" action="/dashboard/reviews/{{ review.id }}/reject"
-                data-confirm="Отклонить и удалить отзыв от «{{ review.author_name }}»?">
+                data-confirm="{{ t('Отклонить') }} {{ t('и удалить') }} {{ t('отзыв') }} от «{{ review.author_name }}»?">
             <input type="hidden" name="{{ csrf_field_name }}" value="{{ csrf_token }}">
-            <button class="btn btn--danger btn--sm" type="submit">Отклонить</button>
+            <button class="btn btn--danger btn--sm" type="submit">{{ t('Отклонить') }}</button>
           </form>
         </div>
       </article>
@@ -44,12 +44,12 @@
 {% else %}
   <div class="empty">
     <div class="empty__icon" aria-hidden="true">✅</div>
-    <h2 class="empty__title">Нет отзывов на модерации</h2>
-    <p class="empty__text">Новые отзывы появятся здесь и уйдут на сайт после проверки.</p>
+    <h2 class="empty__title">{{ t('Нет отзывов на модерации') }}</h2>
+    <p class="empty__text">{{ t('Новые отзывы появятся здесь и уйдут на сайт после проверки.') }}</p>
   </div>
 {% endif %}
 
-<h2 style="font-size:1.1rem;margin:32px 0 12px">Опубликованные</h2>
+<h2 style="font-size:1.1rem;margin:32px 0 12px">{{ t('Опубликованные') }}</h2>
 {% if approved %}
   <div class="stack">
     {% for review in approved %}
@@ -59,20 +59,20 @@
             <strong>{{ review.author_name }}</strong>
             {% if review.author_role %}<span class="dim small">· {{ review.author_role }}</span>{% endif %}
           </div>
-          <div class="rating" aria-label="Оценка {{ review.rating }} из 5">
+          <div class="rating" aria-label="{{ t('Оценка') }} {{ review.rating }} {{ t('из 5') }}">
             {% for _ in range(review.rating) %}★{% endfor %}
           </div>
         </div>
         <p class="muted" style="margin:10px 0 14px">{{ review.body }}</p>
         <form method="post" action="/dashboard/reviews/{{ review.id }}/reject"
-              data-confirm="Удалить отзыв от «{{ review.author_name }}»?">
+              data-confirm="{{ t('Удалить') }} {{ t('отзыв') }} от «{{ review.author_name }}»?">
           <input type="hidden" name="{{ csrf_field_name }}" value="{{ csrf_token }}">
-          <button class="btn btn--ghost btn--sm" type="submit">Снять с публикации</button>
+          <button class="btn btn--ghost btn--sm" type="submit">{{ t('Снять с публикации') }}</button>
         </form>
       </article>
     {% endfor %}
   </div>
 {% else %}
-  <p class="muted">Опубликованных отзывов пока нет.</p>
+  <p class="muted">{{ t('Опубликованных отзывов пока нет.') }}</p>
 {% endif %}
 {% endblock %}

@@ -4,10 +4,10 @@
   <div class="modal__panel">
     <div class="modal__head">
       <div>
-        <h2 class="modal__title" id="support-modal-title">Служба поддержки</h2>
-        <p class="small muted" style="margin:0">Отвечаем в течение одного рабочего дня</p>
+        <h2 class="modal__title" id="support-modal-title">{{ t('Служба поддержки') }}</h2>
+        <p class="small muted" style="margin:0">{{ t('Отвечаем в течение одного рабочего дня') }}</p>
       </div>
-      <button type="button" class="modal__close" data-support-close aria-label="Закрыть">&times;</button>
+      <button type="button" class="modal__close" data-support-close aria-label="{{ t('Закрыть') }}">&times;</button>
     </div>
 
     <form class="form" method="post" action="/support">
@@ -15,34 +15,34 @@
 
       {% if not current_user %}
         <div class="field">
-          <label class="field__label" for="support-email">Ваш e-mail</label>
+          <label class="field__label" for="support-email">{{ t('Ваш e-mail') }}</label>
           <input class="input" type="email" id="support-email" name="email"
                  placeholder="you@example.com" required maxlength="320" autocomplete="email">
         </div>
         <div class="field">
-          <label class="field__label" for="support-name">Имя</label>
+          <label class="field__label" for="support-name">{{ t('Имя') }}</label>
           <input class="input" type="text" id="support-name" name="name"
-                 placeholder="Как к вам обращаться" maxlength="200" autocomplete="name">
+                 placeholder="{{ t('Как к вам обращаться') }}" maxlength="200" autocomplete="name">
         </div>
       {% endif %}
 
       <div class="field">
-        <label class="field__label" for="support-subject">Тема</label>
+        <label class="field__label" for="support-subject">{{ t('Тема') }}</label>
         <input class="input" type="text" id="support-subject" name="subject"
-               placeholder="Кратко о вопросе" required minlength="3" maxlength="200">
+               placeholder="{{ t('Кратко о вопросе') }}" required minlength="3" maxlength="200">
       </div>
 
       <div class="field">
-        <label class="field__label" for="support-message">Сообщение</label>
+        <label class="field__label" for="support-message">{{ t('Сообщение') }}</label>
         <textarea class="textarea" id="support-message" name="message" required
                   minlength="10" maxlength="5000"
-                  placeholder="Опишите вопрос подробнее — так мы поможем быстрее"></textarea>
-        <span class="field__hint">Не более 5000 символов</span>
+                  placeholder="{{ t('Опишите вопрос подробнее — так мы поможем быстрее') }}"></textarea>
+        <span class="field__hint">{{ t('Не более 5000 символов') }}</span>
       </div>
 
-      <button type="submit" class="btn btn--primary btn--block">Отправить обращение</button>
+      <button type="submit" class="btn btn--primary btn--block">{{ t('Отправить обращение') }}</button>
       <p class="tiny dim" style="margin:0">
-        Отправляя форму, вы соглашаетесь с обработкой персональных данных.
+        {{ t('Отправляя форму, вы соглашаетесь с обработкой персональных данных.') }}
       </p>
     </form>
   </div>

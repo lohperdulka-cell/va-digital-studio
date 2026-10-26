@@ -5,6 +5,7 @@ from __future__ import annotations
 from decimal import Decimal
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlencode
 
 from fastapi import Request
 from fastapi.templating import Jinja2Templates
@@ -13,6 +14,13 @@ from app.config import settings
 from app.errors import NotFoundError
 from app.flash import get_flashed_messages
 from app.formatting import format_money
+from app.i18n import (
+    LOCALE_QUERY_PARAM,
+    count_label,
+    get_locale,
+    other_locale,
+    t,
+)
 from app.models.enums import OrderStatus, ServiceCategory, TicketStatus
 from app.security.csrf import CSRF_FIELD_NAME, csrf_token_for
 
@@ -32,13 +40,13 @@ def money(value: Decimal | float | None) -> str:
 
 
 def plural(count: int, one: str, few: str, many: str) -> str:
-    """Russian pluralisation: 1 заказ / 2 заказа / 5 заказов."""
-    count = abs(int(count))
-    if count % 10 == 1 and count % 100 != 11:
-        return one
-    if 2 <= count % 10 <= 4 and not 12 <= count % 100 <= 14:
-        return few
-    return many
+    """Noun form for ``count``: Russian rules, or the English two-form rule.
+
+    Templates pass the three Russian forms.  For English the singular and the
+    plural are looked up in the catalogue, so "1 услуга" becomes "1 service"
+    instead of leaking the Russian noun into an English page.
+    """
+    return count_label(count, one, few, many, t(one), t(many))
 
 
 def date_ru(value: Any) -> str:
@@ -75,6 +83,11 @@ templates.env.globals.update(
     OrderStatus=OrderStatus,
     TicketStatus=TicketStatus,
     csrf_field_name=CSRF_FIELD_NAME,
+    # Interface translation; Russian is the default and returns the source.
+    t=t,
+    get_locale=get_locale,
+    other_locale=other_locale,
+    LOCALE_QUERY_PARAM=LOCALE_QUERY_PARAM,
 )
 
 
@@ -91,9 +104,11 @@ def render(
         "current_user": getattr(request.state, "user", None),
         "is_admin": getattr(request.state, "is_admin", False),
         "csrf_token": csrf_token_for(request),
-        "flash_messages": get_flashed_messages(request),
+        "flash_messages": _translate_flashes(get_flashed_messages(request)),
         "path": request.url.path,
         "next_url": _safe_current_url(request),
+        "locale": get_locale(),
+        "locale_switch_url": _locale_switch_url(request),
         # Sidebar badges, set by the dashboard router's dependency.
         "nav_orders_unread": getattr(request.state, "nav_orders_unread", 0),
         "nav_chats_unread": getattr(request.state, "nav_chats_unread", 0),
@@ -111,9 +126,32 @@ def render(
         raise NotFoundError() from exc
 
 
+def _translate_flashes(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Translate queued messages at render time.
+
+    A message is created by the route that handled the POST and shown after the
+    redirect, so translating here — not when the message is queued — makes it
+    follow the language of the page the visitor actually lands on.  Messages
+    built with f-strings simply fall back to Russian.
+    """
+    return [{**item, "message": t(item["message"])} for item in messages]
+
+
 def _safe_current_url(request: Request) -> str:
     """The current path+query, for ``?next=`` round-trips."""
     url = request.url.path
     if request.url.query:
         url = f"{url}?{request.url.query}"
     return url
+
+
+def _locale_switch_url(request: Request) -> str:
+    """Link to the same page in the other language.
+
+    Keeps every existing query parameter — a catalog filter or a page number
+    must survive a language switch — and only replaces ``lang``.
+    """
+    params = dict(request.query_params)
+    params[LOCALE_QUERY_PARAM] = other_locale()
+    query = urlencode(params)
+    return f"{request.url.path}?{query}" if query else request.url.path

@@ -1,19 +1,19 @@
 {% extends "base.html" %}
-{% block title %}Мои заказы · {{ app_name }}{% endblock %}
+{% block title %}{{ t('Мои заказы') }} · {{ app_name }}{% endblock %}
 
 {% block content %}
 <div class="container">
-  <nav class="breadcrumbs" aria-label="Навигация">
-    <a href="/">Главная</a>
+  <nav class="breadcrumbs" aria-label="{{ t('Навигация') }}">
+    <a href="/">{{ t('Главная') }}</a>
     <span class="breadcrumbs__sep">/</span>
-    <a href="/profile">Профиль</a>
+    <a href="/profile">{{ t('Профиль') }}</a>
     <span class="breadcrumbs__sep">/</span>
-    <span>Мои заказы</span>
+    <span>{{ t('Мои заказы') }}</span>
   </nav>
 
   <div class="dash__head">
-    <h1 class="dash__title">Мои заказы</h1>
-    <a class="btn btn--primary btn--sm" href="/catalog">+ Новый заказ</a>
+    <h1 class="dash__title">{{ t('Мои заказы') }}</h1>
+    <a class="btn btn--primary btn--sm" href="/catalog">{{ t('+ Новый заказ') }}</a>
   </div>
 
   {% if orders %}
@@ -21,11 +21,11 @@
       <table class="table">
         <thead>
           <tr>
-            <th>№</th>
-            <th>Услуга</th>
-            <th>Статус</th>
-            <th>Стоимость</th>
-            <th>Создан</th>
+            <th>{{ t('№') }}</th>
+            <th>{{ t('Услуга') }}</th>
+            <th>{{ t('Статус') }}</th>
+            <th>{{ t('Стоимость') }}</th>
+            <th>{{ t('Создан') }}</th>
             <th></th>
           </tr>
         </thead>
@@ -44,8 +44,8 @@
               <td class="dim small">{{ order.created_at | date_ru }}</td>
               <td>
                 <div class="row" style="gap:8px;flex-wrap:nowrap">
-                  <a class="btn btn--ghost btn--sm" href="/profile/orders/{{ order.id }}">Открыть</a>
-                  <a class="btn btn--cyan btn--sm" href="/chat/{{ order.id }}">Чат</a>
+                  <a class="btn btn--ghost btn--sm" href="/profile/orders/{{ order.id }}">{{ t('Открыть') }}</a>
+                  <a class="btn btn--cyan btn--sm" href="/chat/{{ order.id }}">{{ t('Чат') }}</a>
                 </div>
               </td>
             </tr>
@@ -56,9 +56,9 @@
   {% else %}
     <div class="empty">
       <div class="empty__icon" aria-hidden="true">📦</div>
-      <h2 class="empty__title">Заказов пока нет</h2>
-      <p class="empty__text">Выберите услугу — мы создадим заказ и откроем чат с менеджером.</p>
-      <a class="btn btn--primary" href="/catalog">Перейти в каталог</a>
+      <h2 class="empty__title">{{ t('Заказов пока нет') }}</h2>
+      <p class="empty__text">{{ t('Выберите услугу — мы создадим заказ и откроем чат с менеджером.') }}</p>
+      <a class="btn btn--primary" href="/catalog">{{ t('Перейти в каталог') }}</a>
     </div>
   {% endif %}
 </div>

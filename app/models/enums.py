@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from enum import Enum
 
+from app.i18n import t
+
 
 class StrEnum(str, Enum):
     """String-valued enum: serialises cleanly and stores as VARCHAR."""
@@ -20,7 +22,7 @@ class ServiceCategory(StrEnum):
 
     @property
     def label(self) -> str:
-        return _CATEGORY_LABELS[self]
+        return t(_CATEGORY_LABELS[self])
 
 
 _CATEGORY_LABELS = {
@@ -41,7 +43,7 @@ class OrderStatus(StrEnum):
 
     @property
     def label(self) -> str:
-        return _ORDER_STATUS_LABELS[self]
+        return t(_ORDER_STATUS_LABELS[self])
 
     @property
     def css_class(self) -> str:
@@ -77,7 +79,7 @@ class TicketStatus(StrEnum):
 
     @property
     def label(self) -> str:
-        return "Открыт" if self is TicketStatus.OPEN else "Закрыт"
+        return t("Открыт" if self is TicketStatus.OPEN else "Закрыт")
 
     @property
     def css_class(self) -> str:

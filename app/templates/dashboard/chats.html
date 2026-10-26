@@ -1,10 +1,10 @@
 {% extends "dashboard/base.html" %}
-{% block dash_title %}Чаты{% endblock %}
+{% block dash_title %}{{ t('Чаты') }}{% endblock %}
 
 {% block dash_content %}
 <div class="dash__head">
-  <h1 class="dash__title">Чаты по заказам</h1>
-  <span class="dim small">{{ conversations | length }} {{ 'диалог' if conversations | length == 1 else 'диалогов' }}</span>
+  <h1 class="dash__title">{{ t('Чаты по заказам') }}</h1>
+  <span class="dim small">{{ conversations | length }} {{ conversations | length | plural('диалог', 'диалога', 'диалогов') }}</span>
 </div>
 
 {% if conversations %}
@@ -12,9 +12,9 @@
     <table class="table">
       <thead>
         <tr>
-          <th>Заказ</th>
-          <th>Клиент</th>
-          <th>Последнее сообщение</th>
+          <th>{{ t('Заказ') }}</th>
+          <th>{{ t('Клиент') }}</th>
+          <th>{{ t('Последнее сообщение') }}</th>
           <th></th>
         </tr>
       </thead>
@@ -43,7 +43,7 @@
                 {% if unread.get(order.id) %}
                   <span class="dash__count">{{ unread[order.id] }}</span>
                 {% endif %}
-                <a class="btn btn--cyan btn--sm" href="/chat/{{ order.id }}">Открыть чат</a>
+                <a class="btn btn--cyan btn--sm" href="/chat/{{ order.id }}">{{ t('Открыть чат') }}</a>
               </div>
             </td>
           </tr>
@@ -54,9 +54,9 @@
 {% else %}
   <div class="empty">
     <div class="empty__icon" aria-hidden="true">💬</div>
-    <h2 class="empty__title">Диалогов пока нет</h2>
+    <h2 class="empty__title">{{ t('Диалогов пока нет') }}</h2>
     <p class="empty__text">
-      Как только клиент напишет в чат по заказу, диалог появится здесь.
+      {{ t('Как только клиент напишет в чат по заказу, диалог появится здесь.') }}
     </p>
   </div>
 {% endif %}

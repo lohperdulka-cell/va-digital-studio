@@ -1,20 +1,20 @@
 {% extends "base.html" %}
-{% block title %}Служба поддержки · {{ app_name }}{% endblock %}
+{% block title %}{{ t('Служба поддержки ·') }} {{ app_name }}{% endblock %}
 
 {% block content %}
 <div class="container" style="max-width:680px">
-  <nav class="breadcrumbs" aria-label="Навигация">
-    <a href="/">Главная</a>
+  <nav class="breadcrumbs" aria-label="{{ t('Навигация') }}">
+    <a href="/">{{ t('Главная') }}</a>
     <span class="breadcrumbs__sep">/</span>
-    <span>Поддержка</span>
+    <span>{{ t('Поддержка') }}</span>
   </nav>
 
   <div class="section-head">
-    <span class="section-head__eyebrow">Поддержка</span>
-    <h1 class="section-head__title">Служба поддержки</h1>
+    <span class="section-head__eyebrow">{{ t('Поддержка') }}</span>
+    <h1 class="section-head__title">{{ t('Служба поддержки') }}</h1>
     <p class="section-head__subtitle">
-      Опишите вопрос — создадим тикет и ответим на указанный e-mail.
-      Обычно отвечаем в течение одного рабочего дня.
+      {{ t('Опишите вопрос — создадим тикет и ответим на указанный e-mail.
+      Обычно отвечаем в течение одного рабочего дня.') }}
     </p>
   </div>
 
@@ -26,49 +26,49 @@
 
       {% if not current_user %}
         <div class="field">
-          <label class="field__label" for="support-email-page">Ваш e-mail</label>
+          <label class="field__label" for="support-email-page">{{ t('Ваш e-mail') }}</label>
           <input class="input" type="email" id="support-email-page" name="email" required
                  value="{{ form.email or '' }}" maxlength="320" autocomplete="email"
                  placeholder="you@example.com">
         </div>
         <div class="field">
-          <label class="field__label" for="support-name-page">Имя</label>
+          <label class="field__label" for="support-name-page">{{ t('Имя') }}</label>
           <input class="input" type="text" id="support-name-page" name="name"
                  value="{{ form.name or '' }}" maxlength="200" autocomplete="name"
-                 placeholder="Как к вам обращаться">
+                 placeholder="{{ t('Как к вам обращаться') }}">
         </div>
       {% else %}
         <p class="small muted" style="margin:0">
-          Ответим на <strong>{{ current_user.email }}</strong>.
+          {{ t('Ответим на') }} <strong>{{ current_user.email }}</strong>.
         </p>
       {% endif %}
 
       <div class="field">
-        <label class="field__label" for="support-subject-page">Тема</label>
+        <label class="field__label" for="support-subject-page">{{ t('Тема') }}</label>
         <input class="input" type="text" id="support-subject-page" name="subject" required
                value="{{ form.subject or '' }}" minlength="3" maxlength="200"
-               placeholder="Кратко о вопросе">
+               placeholder="{{ t('Кратко о вопросе') }}">
       </div>
 
       <div class="field">
-        <label class="field__label" for="support-message-page">Сообщение</label>
+        <label class="field__label" for="support-message-page">{{ t('Сообщение') }}</label>
         <textarea class="textarea" id="support-message-page" name="message" required
                   minlength="10" maxlength="5000"
-                  placeholder="Опишите ситуацию подробнее">{{ form.message or '' }}</textarea>
-        <span class="field__hint">До 5000 символов</span>
+                  placeholder="{{ t('Опишите ситуацию подробнее') }}">{{ form.message or '' }}</textarea>
+        <span class="field__hint">{{ t('До 5000 символов') }}</span>
       </div>
 
-      <button type="submit" class="btn btn--primary btn--block">Создать обращение</button>
+      <button type="submit" class="btn btn--primary btn--block">{{ t('Создать обращение') }}</button>
     </form>
   </div>
 
   {% if my_tickets %}
     <section class="section">
-      <h2 class="dash__title" style="font-size:1.25rem">Мои обращения</h2>
+      <h2 class="dash__title" style="font-size:1.25rem">{{ t('Мои обращения') }}</h2>
       <div class="table-wrap" style="margin-top:16px">
         <table class="table">
           <thead>
-            <tr><th>№</th><th>Тема</th><th>Статус</th><th>Создан</th></tr>
+            <tr><th>{{ t('№') }}</th><th>{{ t('Тема') }}</th><th>{{ t('Статус') }}</th><th>{{ t('Создан') }}</th></tr>
           </thead>
           <tbody>
             {% for ticket in my_tickets %}

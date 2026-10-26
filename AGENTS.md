@@ -117,6 +117,27 @@ Sent from `app/services/mailer.py` over one of two transports.
   `UsernameTakenError` and `EmailTakenError` are reported to the user on
   purpose — the rate limiter blunts enumeration.
 
+## Languages (RU / EN)
+
+- **Russian is the source of truth.** `app/i18n.py` holds one catalogue keyed by
+  the Russian text; `t()` returns the key unchanged for `ru`, so a missing
+  entry degrades to Russian instead of raising.
+- `app/middleware.py` `_resolve_locale()` decides the locale in this order:
+  `?lang=` → the `va_lang` cookie → Russian. Every response attaches it, so the
+  choice survives navigation and is remembered for `LOCALE_COOKIE_MAX_AGE`.
+- Templates translate by wrapping text in `t(...)`. The header and the burger
+  menu carry the switcher; `locale_switch_url` keeps the current query string
+  so a filtered catalog or a page number survives the switch.
+- `plural(count, one, few, many)` takes the **three Russian forms** and picks
+  the English singular/plural from the catalogue. Both English forms must be
+  present, or a Russian noun leaks onto an English page.
+- Flash messages are translated at render time in
+  `app/templating.py:_translate_flashes()`.
+- Tests: `tests/test_i18n.py`. It guards the catalogue (no duplicate keys, no
+  empty values, no English value equal to the Russian source), the locale
+  resolution order, the plural rule, and that public and dashboard pages render
+  in both languages with no leftover Russian.
+
 ## Git
 
 - Default branch: `main`. Feature work goes on a branch and is merged back.

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}{{ status_code }} — {{ title }} · {{ app_name }}{% endblock %}
+{% block title %}{{ status_code }} — {{ t(title) }} · {{ app_name }}{% endblock %}
 
 {% block content %}
 <div class="container">
@@ -8,11 +8,11 @@
       {% if status_code == 404 %}🧭{% elif status_code == 403 %}🔒{% else %}⚠️{% endif %}
     </div>
     <h1 class="empty__title" style="font-size:2.4rem">{{ status_code }}</h1>
-    <h2 class="empty__title">{{ title }}</h2>
-    <p class="empty__text">{{ detail }}</p>
+    <h2 class="empty__title">{{ t(title) }}</h2>
+    <p class="empty__text">{{ t(detail) }}</p>
     <div class="row" style="justify-content:center">
-      <a class="btn btn--primary" href="/">На главную</a>
-      <a class="btn btn--ghost" href="/catalog">Каталог услуг</a>
+      <a class="btn btn--primary" href="/">{{ t('На главную') }}</a>
+      <a class="btn btn--ghost" href="/catalog">{{ t('Каталог услуг') }}</a>
     </div>
   </div>
 </div>

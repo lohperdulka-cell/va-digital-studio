@@ -1,7 +1,7 @@
 {# Inline form errors, rendered from a list of messages. #}
 {% if errors %}
   <div class="card card--flat" style="border-color:var(--danger)">
-    <strong class="small">Проверьте форму:</strong>
+    <strong class="small">{{ t('Проверьте форму:') }}</strong>
     <ul class="small muted" style="margin:8px 0 0">
       {% for error in errors %}<li>{{ error }}</li>{% endfor %}
     </ul>

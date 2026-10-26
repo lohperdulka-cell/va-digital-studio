@@ -1,16 +1,16 @@
 {% extends "base.html" %}
 {% from "partials/auth_fields.html" import text_input, error_summary, google_button, divider %}
 
-{% block title %}Вход — {{ app_name }}{% endblock %}
-{% block description %}Войдите в личный кабинет VA Digital Studio: e-mail и пароль, Telegram или Google.{% endblock %}
+{% block title %}{{ t('Вход —') }} {{ app_name }}{% endblock %}
+{% block description %}{{ t('Войдите в личный кабинет VA Digital Studio: e-mail и пароль, Telegram или Google.') }}{% endblock %}
 {% block main_class %}page auth-page{% endblock %}
 
 {% block content %}
 <section class="auth">
   <div class="auth__card">
-    <h1 class="auth__title">Вход в аккаунт</h1>
+    <h1 class="auth__title">{{ t('Вход в аккаунт') }}</h1>
     <p class="auth__lead">
-      E-mail и пароль — основной способ. Ниже можно войти через Telegram или Google.
+      {{ t('E-mail и пароль — основной способ. Ниже можно войти через Telegram или Google.') }}
     </p>
 
     {{ error_summary(errors) }}
@@ -19,19 +19,19 @@
       <input type="hidden" name="{{ csrf_field_name }}" value="{{ csrf_token }}">
       <input type="hidden" name="next" value="{{ next_url }}">
 
-      {{ text_input("login", "E-mail или логин", value=values.get("login", ""),
-                    placeholder="you@example.com или ваш логин",
+      {{ text_input("login", t('E-mail или логин'), value=values.get("login", ""),
+                    placeholder="{{ t('you@example.com или ваш логин') }}",
                     autocomplete="username", autofocus=true,
                     maxlength=320, field_errors=field_errors) }}
-      {{ text_input("password", "Пароль", type="password", value="",
-                    placeholder="Ваш пароль", autocomplete="current-password",
+      {{ text_input("password", t('Пароль'), type="password", value="",
+                    placeholder="{{ t('Ваш пароль') }}", autocomplete="current-password",
                     maxlength=200, field_errors=field_errors) }}
 
-      <button type="submit" class="btn btn--primary btn--block">Войти</button>
+      <button type="submit" class="btn btn--primary btn--block">{{ t('Войти') }}</button>
     </form>
 
     <p class="auth__alt">
-      Нет аккаунта? <a href="/auth/register?next={{ next_url | urlencode }}">Зарегистрироваться</a>
+      {{ t('Нет аккаунта?') }} <a href="/auth/register?next={{ next_url | urlencode }}">{{ t('Зарегистрироваться') }}</a>
     </p>
 
     {{ divider() }}
@@ -39,7 +39,7 @@
     <div class="auth__methods">
       {% if telegram_enabled %}
         <a class="btn btn--ghost btn--block" href="/auth/telegram?next={{ next_url | urlencode }}">
-          ✈️ Войти через Telegram
+          {{ t('✈️ Войти через Telegram') }}
         </a>
       {% endif %}
       {% if google_enabled %}

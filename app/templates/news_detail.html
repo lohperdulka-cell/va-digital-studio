@@ -4,10 +4,10 @@
 
 {% block content %}
 <div class="container" style="max-width:840px">
-  <nav class="breadcrumbs" aria-label="Навигация">
-    <a href="/">Главная</a>
+  <nav class="breadcrumbs" aria-label="{{ t('Навигация') }}">
+    <a href="/">{{ t('Главная') }}</a>
     <span class="breadcrumbs__sep">/</span>
-    <a href="/news">Новости</a>
+    <a href="/news">{{ t('Новости') }}</a>
     <span class="breadcrumbs__sep">/</span>
     <span>{{ item.title }}</span>
   </nav>
@@ -36,7 +36,7 @@
               data-news-id="{{ item.id }}"
               data-liked="{{ 'true' if item.liked_by(current_user.id if current_user else none) else 'false' }}"
               aria-pressed="{{ 'true' if item.liked_by(current_user.id if current_user else none) else 'false' }}"
-              aria-label="Поставить лайк">
+              aria-label="{{ t('Поставить лайк') }}">
         <span class="like-btn__icon" aria-hidden="true">♥</span>
         <span data-like-count>{{ item.likes_count }}</span>
       </button>
@@ -44,7 +44,7 @@
         {{ item.likes_count }} {{ item.likes_count | plural('лайк', 'лайка', 'лайков') }}
       </span>
       <span class="spacer"></span>
-      <a class="btn btn--ghost btn--sm" href="/news">← Все новости</a>
+      <a class="btn btn--ghost btn--sm" href="/news">← {{ t('Все новости') }}</a>
     </div>
   </article>
 </div>

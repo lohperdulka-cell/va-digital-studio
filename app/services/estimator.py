@@ -11,6 +11,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from decimal import Decimal
 
+from app.i18n import t as _t
+
 # Base price and lead time per project type.  Prices are the studio's entry
 # points; the catalogue's `price_from` mirrors them.
 BASE_PRICE: dict[str, Decimal] = {
@@ -94,19 +96,19 @@ class Estimate:
 
 
 def project_types() -> list[tuple[str, str]]:
-    return list(PROJECT_LABELS.items())
+    return [(_key, _t(_label)) for _key, _label in PROJECT_LABELS.items()]
 
 
 def scopes() -> list[tuple[str, str]]:
-    return list(SCOPE_LABELS.items())
+    return [(_key, _t(_label)) for _key, _label in SCOPE_LABELS.items()]
 
 
 def deadlines() -> list[tuple[str, str]]:
-    return list(DEADLINE_LABELS.items())
+    return [(_key, _t(_label)) for _key, _label in DEADLINE_LABELS.items()]
 
 
 def addon_options() -> list[tuple[str, str]]:
-    return list(ADDON_LABELS.items())
+    return [(_key, _t(_label)) for _key, _label in ADDON_LABELS.items()]
 
 
 def estimate(
@@ -124,7 +126,7 @@ def estimate(
     """
     base = BASE_PRICE.get(project_type, BASE_PRICE["landing"])
     base_days = BASE_DAYS.get(project_type, BASE_DAYS["landing"])
-    breakdown = [f"{PROJECT_LABELS.get(project_type, 'Проект')}: от {base:.0f} ₽"]
+    breakdown = [f"{_t(PROJECT_LABELS.get(project_type, 'Проект'))}: {base:.0f} ₽"]
 
     scope_factor, scope_days = SCOPE_FACTORS.get(scope, SCOPE_FACTORS["standard"])
     deadline_factor, deadline_days = DEADLINE_FACTORS.get(
@@ -134,13 +136,13 @@ def estimate(
     price = base * scope_factor
     if scope_factor != Decimal("1.0"):
         breakdown.append(
-            f"{SCOPE_LABELS.get(scope, scope)}: ×{scope_factor}"
+            f"{_t(SCOPE_LABELS.get(scope, scope))}: ×{scope_factor}"
         )
 
     price *= deadline_factor
     if deadline_factor != Decimal("1.0"):
         breakdown.append(
-            f"{DEADLINE_LABELS.get(deadline, deadline)}: +"
+            f"{_t(DEADLINE_LABELS.get(deadline, deadline))}: +"
             f"{int((deadline_factor - 1) * 100)}%"
         )
 
@@ -151,7 +153,7 @@ def estimate(
         extra_price, extra_days = ADDONS[key]
         price += extra_price
         days += extra_days
-        breakdown.append(f"{ADDON_LABELS[key]}: +{extra_price:.0f} ₽")
+        breakdown.append(f"{_t(ADDON_LABELS[key])}: +{extra_price:.0f} ₽")
 
     days = max(1, round(days * deadline_days))
     price_low = (price * RANGE_LOW).quantize(Decimal("1"))

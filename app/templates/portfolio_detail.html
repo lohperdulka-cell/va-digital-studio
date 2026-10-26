@@ -1,13 +1,13 @@
 {% extends "base.html" %}
-{% block title %}{{ case.title }} · Портфолио {{ app_name }}{% endblock %}
+{% block title %}{{ case.title }} · {{ t('Портфолио') }} {{ app_name }}{% endblock %}
 {% block description %}{{ case.summary }}{% endblock %}
 
 {% block content %}
 <div class="container">
-  <nav class="breadcrumbs" aria-label="Навигация">
-    <a href="/">Главная</a>
+  <nav class="breadcrumbs" aria-label="{{ t('Навигация') }}">
+    <a href="/">{{ t('Главная') }}</a>
     <span class="breadcrumbs__sep">/</span>
-    <a href="/portfolio">Портфолио</a>
+    <a href="/portfolio">{{ t('Портфолио') }}</a>
     <span class="breadcrumbs__sep">/</span>
     <span>{{ case.title }}</span>
   </nav>
@@ -16,11 +16,11 @@
     <div>
       <div class="row" style="margin-bottom:16px">
         <span class="card__icon" aria-hidden="true">{{ case.cover_emoji }}</span>
-        {% if case.is_featured %}<span class="badge badge--accent">Топ</span>{% endif %}
+        {% if case.is_featured %}<span class="badge badge--accent">{{ t('Топ') }}</span>{% endif %}
       </div>
 
       <h1>{{ case.title }}</h1>
-      {% if case.client %}<p class="muted">Клиент: {{ case.client }}</p>{% endif %}
+      {% if case.client %}<p class="muted">{{ t('Клиент:') }} {{ case.client }}</p>{% endif %}
       <p class="muted" style="font-size:1.08rem">{{ case.summary }}</p>
 
       {% if case.result_metric %}
@@ -29,7 +29,7 @@
 
       {% if case.body %}
         <div class="card" style="margin-top:24px">
-          <h2 style="font-size:1.15rem">Что сделали</h2>
+          <h2 style="font-size:1.15rem">{{ t('Что сделали') }}</h2>
           {# Admin-authored content, sanitised on save (app/security/sanitize.py). #}
           <div class="news-body">{{ case.body | safe }}</div>
         </div>
@@ -37,7 +37,7 @@
 
       {% if case.tags %}
         <div style="margin-top:24px">
-          <h2 style="font-size:1.05rem">Технологии и теги</h2>
+          <h2 style="font-size:1.05rem">{{ t('Технологии и теги') }}</h2>
           <div class="chips">
             {% for tag in case.tags %}<span class="chip">{{ tag }}</span>{% endfor %}
           </div>
@@ -47,7 +47,7 @@
       {% if case.external_url %}
         <p style="margin-top:20px">
           <a class="btn btn--ghost" href="{{ case.external_url }}" target="_blank" rel="noopener noreferrer">
-            Открыть проект ↗
+            {{ t('Открыть проект ↗') }}
           </a>
         </p>
       {% endif %}
@@ -55,25 +55,25 @@
 
     <aside class="detail-side">
       <div class="card">
-        <h2 style="font-size:1.05rem">Хотите похожий проект?</h2>
-        <p class="small muted">Расскажите о задаче — предложим решение и сроки.</p>
+        <h2 style="font-size:1.05rem">{{ t('Хотите похожий проект?') }}</h2>
+        <p class="small muted">{{ t('Расскажите о задаче — предложим решение и сроки.') }}</p>
         <a class="btn btn--primary btn--block btn--lg" href="/contact" style="margin-top:14px">
-          Оставить заявку
+          {{ t('Оставить заявку') }}
         </a>
         {% if case.service_slug %}
           <a class="btn btn--ghost btn--block" href="/catalog/{{ case.service_slug }}" style="margin-top:10px">
-            Смотреть услугу
+            {{ t('Смотреть услугу') }}
           </a>
         {% endif %}
         <a class="btn btn--ghost btn--block" href="/calculator" style="margin-top:10px">
-          Рассчитать стоимость
+          {{ t('Рассчитать стоимость') }}
         </a>
       </div>
 
       <div class="card card--flat">
-        <h2 style="font-size:1rem">Похожие проекты</h2>
+        <h2 style="font-size:1rem">{{ t('Похожие проекты') }}</h2>
         <a class="btn btn--ghost btn--block btn--sm" href="/portfolio" style="margin-top:8px">
-          Все кейсы →
+          {{ t('Все кейсы →') }}
         </a>
       </div>
     </aside>

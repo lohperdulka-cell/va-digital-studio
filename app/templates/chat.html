@@ -1,18 +1,18 @@
 {% extends "base.html" %}
-{% block title %}Чат по заказу #{{ order.id }} · {{ app_name }}{% endblock %}
+{% block title %}{{ t('Чат по заказу') }} #{{ order.id }} · {{ app_name }}{% endblock %}
 
 {% block content %}
 <div class="container">
-  <nav class="breadcrumbs" aria-label="Навигация">
-    <a href="/">Главная</a>
+  <nav class="breadcrumbs" aria-label="{{ t('Навигация') }}">
+    <a href="/">{{ t('Главная') }}</a>
     <span class="breadcrumbs__sep">/</span>
     {% if as_admin %}
-      <a href="/dashboard/chats">Чаты</a>
+      <a href="/dashboard/chats">{{ t('Чаты') }}</a>
     {% else %}
-      <a href="/profile">Профиль</a>
+      <a href="/profile">{{ t('Профиль') }}</a>
     {% endif %}
     <span class="breadcrumbs__sep">/</span>
-    <span>Заказ #{{ order.id }}</span>
+    <span>{{ t('Заказ') }} #{{ order.id }}</span>
   </nav>
 
   <div class="row" style="margin-bottom:16px;align-items:flex-start">
@@ -23,14 +23,14 @@
         {% if as_admin %}
           <span>{{ order.user.display_name }} · {{ order.user.email }}</span>
         {% endif %}
-        <span>Заказ #{{ order.id }}</span>
+        <span>{{ t('Заказ') }} #{{ order.id }}</span>
       </div>
     </div>
     <span class="spacer"></span>
     {% if as_admin %}
-      <a class="btn btn--ghost btn--sm" href="/dashboard/orders/{{ order.id }}">Управление заказом</a>
+      <a class="btn btn--ghost btn--sm" href="/dashboard/orders/{{ order.id }}">{{ t('Управление заказом') }}</a>
     {% else %}
-      <a class="btn btn--ghost btn--sm" href="/profile/orders/{{ order.id }}">Детали заказа</a>
+      <a class="btn btn--ghost btn--sm" href="/profile/orders/{{ order.id }}">{{ t('Детали заказа') }}</a>
     {% endif %}
   </div>
 
@@ -39,10 +39,10 @@
     <div class="chat__header">
       <div>
         <strong>
-          {% if as_admin %}Чат с клиентом{% else %}Чат с менеджером{% endif %}
+          {% if as_admin %}{{ t('Чат') }} {{ t('с клиентом') }}{% else %}{{ t('Чат') }} {{ t('с менеджером') }}{% endif %}
         </strong>
         <div class="tiny dim">
-          {% if order.service %}{{ order.service.title }}{% else %}Индивидуальный проект{% endif %}
+          {% if order.service %}{{ order.service.title }}{% else %}{{ t('Индивидуальный проект') }}{% endif %}
         </div>
       </div>
       <span class="spacer"></span>
@@ -52,25 +52,25 @@
     </div>
 
     <div class="chat__log" data-chat-log role="log" aria-live="polite"
-         aria-label="Сообщения чата">
+         aria-label="{{ t('Сообщения') }} {{ t('чата') }}">
       <div class="chat__msg chat__msg--system">
-        <div class="chat__bubble">Загружаем историю сообщений…</div>
+        <div class="chat__bubble">{{ t('Загружаем историю сообщений…') }}</div>
       </div>
     </div>
 
     <div class="chat__typing" data-chat-typing aria-live="polite"></div>
 
     <form class="chat__form" data-chat-form autocomplete="off">
-      <label class="sr-only" for="chat-input">Сообщение</label>
+      <label class="sr-only" for="chat-input">{{ t('Сообщение') }}</label>
       <textarea class="chat__input" id="chat-input" name="text" rows="1"
-                maxlength="2000" placeholder="Напишите сообщение…"
+                maxlength="2000" placeholder="{{ t('Напишите сообщение…') }}"
                 data-chat-input required></textarea>
-      <button type="submit" class="btn btn--primary">Отправить</button>
+      <button type="submit" class="btn btn--primary">{{ t('Отправить') }}</button>
     </form>
   </section>
 
   <p class="tiny dim" style="margin-top:12px">
-    Сообщения сохраняются в истории заказа. Не отправляйте пароли и данные карт.
+    {{ t('Сообщения') }} {{ t('сохраняются в истории заказа. Не отправляйте пароли и данные карт.') }}
   </p>
 </div>
 {% endblock %}

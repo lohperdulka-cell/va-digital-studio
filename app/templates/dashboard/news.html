@@ -1,10 +1,10 @@
 {% extends "dashboard/base.html" %}
-{% block dash_title %}Новости{% endblock %}
+{% block dash_title %}{{ t('Новости') }}{% endblock %}
 
 {% block dash_content %}
 <div class="dash__head">
-  <h1 class="dash__title">Новости</h1>
-  <a class="btn btn--primary btn--sm" href="/dashboard/news/new">+ Новая новость</a>
+  <h1 class="dash__title">{{ t('Новости') }}</h1>
+  <a class="btn btn--primary btn--sm" href="/dashboard/news/new">{{ t('+ Новая новость') }}</a>
 </div>
 
 {% if news %}
@@ -13,10 +13,10 @@
       <thead>
         <tr>
           <th></th>
-          <th>Заголовок</th>
-          <th>Статус</th>
-          <th>Лайки</th>
-          <th>Дата</th>
+          <th>{{ t('Заголовок') }}</th>
+          <th>{{ t('Статус') }}</th>
+          <th>{{ t('Лайки') }}</th>
+          <th>{{ t('Дата') }}</th>
           <th></th>
         </tr>
       </thead>
@@ -30,20 +30,20 @@
             </td>
             <td>
               {% if item.is_published %}
-                <span class="badge status-done">Опубликована</span>
+                <span class="badge status-done">{{ t('Опубликована') }}</span>
               {% else %}
-                <span class="badge status-draft">Черновик</span>
+                <span class="badge status-draft">{{ t('Черновик') }}</span>
               {% endif %}
             </td>
             <td class="dim small">❤️ {{ item.likes_count }}</td>
             <td class="dim small">{{ item.published_at | date_ru }}</td>
             <td>
               <div class="row" style="gap:8px;flex-wrap:nowrap">
-                <a class="btn btn--ghost btn--sm" href="/dashboard/news/{{ item.id }}">Изменить</a>
+                <a class="btn btn--ghost btn--sm" href="/dashboard/news/{{ item.id }}">{{ t('Изменить') }}</a>
                 <form method="post" action="/dashboard/news/{{ item.id }}/delete"
-                      data-confirm="Удалить новость «{{ item.title }}»?">
+                      data-confirm="{{ t('Удалить') }} {{ t('новость') }} «{{ item.title }}»?">
                   <input type="hidden" name="{{ csrf_field_name }}" value="{{ csrf_token }}">
-                  <button class="btn btn--danger btn--sm" type="submit">Удалить</button>
+                  <button class="btn btn--danger btn--sm" type="submit">{{ t('Удалить') }}</button>
                 </form>
               </div>
             </td>
@@ -55,9 +55,9 @@
 {% else %}
   <div class="empty">
     <div class="empty__icon" aria-hidden="true">📰</div>
-    <h2 class="empty__title">Новостей пока нет</h2>
-    <p class="empty__text">Опубликуйте первую новость — она появится на главной и в разделе «Новости».</p>
-    <a class="btn btn--primary" href="/dashboard/news/new">Создать новость</a>
+    <h2 class="empty__title">{{ t('Новостей пока нет') }}</h2>
+    <p class="empty__text">{{ t('Опубликуйте первую новость — она появится на главной и в разделе «Новости».') }}</p>
+    <a class="btn btn--primary" href="/dashboard/news/new">{{ t('Создать новость') }}</a>
   </div>
 {% endif %}
 {% endblock %}

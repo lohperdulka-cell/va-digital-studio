@@ -1,21 +1,21 @@
 {% extends "base.html" %}
-{% block title %}Калькулятор стоимости · {{ app_name }}{% endblock %}
-{% block description %}Рассчитайте примерную стоимость сайта, Telegram-бота или автоматизации за минуту.{% endblock %}
+{% block title %}{{ t('Калькулятор стоимости') }} · {{ app_name }}{% endblock %}
+{% block description %}{{ t('Рассчитайте примерную стоимость сайта, Telegram-бота или автоматизации за минуту.') }}{% endblock %}
 
 {% block content %}
 <div class="container">
-  <nav class="breadcrumbs" aria-label="Навигация">
-    <a href="/">Главная</a>
+  <nav class="breadcrumbs" aria-label="{{ t('Навигация') }}">
+    <a href="/">{{ t('Главная') }}</a>
     <span class="breadcrumbs__sep">/</span>
-    <span>Калькулятор</span>
+    <span>{{ t('Калькулятор') }}</span>
   </nav>
 
   <div class="section-head">
-    <span class="section-head__eyebrow">Калькулятор</span>
-    <h1 class="section-head__title">Сколько будет стоить проект</h1>
+    <span class="section-head__eyebrow">{{ t('Калькулятор') }}</span>
+    <h1 class="section-head__title">{{ t('Сколько будет стоить проект') }}</h1>
     <p class="section-head__subtitle">
-      Ответьте на несколько вопросов — покажем ориентировочную стоимость и срок.
-      Точную смету фиксируем после обсуждения задачи.
+      {{ t('Ответьте на несколько вопросов — покажем ориентировочную стоимость и срок.
+      Точную смету фиксируем после обсуждения задачи.') }}
     </p>
   </div>
 
@@ -25,7 +25,7 @@
       <input type="hidden" name="{{ csrf_field_name }}" value="{{ csrf_token }}">
 
       <fieldset class="calc-field">
-        <legend class="field__label">Тип проекта</legend>
+        <legend class="field__label">{{ t('Тип проекта') }}</legend>
         <div class="calc-options">
           {% for value, label in project_types %}
             <label class="calc-option">
@@ -38,7 +38,7 @@
       </fieldset>
 
       <fieldset class="calc-field">
-        <legend class="field__label">Объём работ</legend>
+        <legend class="field__label">{{ t('Объём работ') }}</legend>
         <div class="calc-options">
           {% for value, label in scopes %}
             <label class="calc-option">
@@ -51,7 +51,7 @@
       </fieldset>
 
       <fieldset class="calc-field">
-        <legend class="field__label">Сроки</legend>
+        <legend class="field__label">{{ t('Сроки') }}</legend>
         <div class="calc-options">
           {% for value, label in deadlines %}
             <label class="calc-option">
@@ -64,7 +64,7 @@
       </fieldset>
 
       <fieldset class="calc-field">
-        <legend class="field__label">Дополнительно</legend>
+        <legend class="field__label">{{ t('Дополнительно') }}</legend>
         <div class="calc-options">
           {% for value, label in addon_options %}
             <label class="calc-option">
@@ -77,19 +77,19 @@
       </fieldset>
 
       <button class="btn btn--primary btn--block btn--lg" type="submit" style="margin-top:20px">
-        Пересчитать
+        {{ t('Пересчитать') }}
       </button>
     </form>
 
     <aside class="detail-side">
       <div class="card calc-result">
-        <div class="tiny dim">Примерная стоимость</div>
+        <div class="tiny dim">{{ t('Примерная стоимость') }}</div>
         <div class="price-tag gradient-text">
           {{ estimate.price_low | money }} — {{ estimate.price_high | money }}
         </div>
         <ul class="meta-list">
           <li class="meta-list__row">
-            <span class="meta-list__label">Срок</span>
+            <span class="meta-list__label">{{ t('Срок') }}</span>
             <span class="meta-list__value">~{{ estimate.days }}
               {{ estimate.days | plural('день', 'дня', 'дней') }}</span>
           </li>
@@ -97,7 +97,7 @@
 
         {% if estimate.breakdown %}
           <details class="calc-breakdown">
-            <summary>Из чего сложилась цена</summary>
+            <summary>{{ t('Из чего сложилась цена') }}</summary>
             <ul class="small muted" style="margin:10px 0 0;padding-left:1.1em">
               {% for line in estimate.breakdown %}<li>{{ line }}</li>{% endfor %}
             </ul>
@@ -105,11 +105,11 @@
         {% endif %}
 
         <p class="tiny dim" style="margin:14px 0 0">
-          Это ориентир, а не оферта. Итоговую смету согласуем в чате.
+          {{ t('Это ориентир, а не оферта. Итоговую смету согласуем в чате.') }}
         </p>
 
         <a class="btn btn--primary btn--block" href="/contact" style="margin-top:14px">
-          Обсудить проект
+          {{ t('Обсудить проект') }}
         </a>
       </div>
     </aside>

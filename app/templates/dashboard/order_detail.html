@@ -1,16 +1,16 @@
 {% extends "dashboard/base.html" %}
-{% block dash_title %}Заказ #{{ order.id }}{% endblock %}
+{% block dash_title %}{{ t('Заказ') }} #{{ order.id }}{% endblock %}
 
 {% block crumbs %}
   <span class="breadcrumbs__sep">/</span>
-  <a href="/dashboard/orders">Заказы</a>
+  <a href="/dashboard/orders">{{ t('Заказы') }}</a>
   <span class="breadcrumbs__sep">/</span>
   <span>#{{ order.id }}</span>
 {% endblock %}
 
 {% block dash_content %}
 <div class="dash__head">
-  <h1 class="dash__title">Заказ #{{ order.id }}</h1>
+  <h1 class="dash__title">{{ t('Заказ') }} #{{ order.id }}</h1>
   <span class="badge {{ order.status.css_class }}">{{ order.status.label }}</span>
 </div>
 
@@ -24,14 +24,14 @@
     </div>
 
     <div class="card" style="margin-top:20px">
-      <h2 style="font-size:1.05rem;margin-top:0">Чат с клиентом</h2>
+      <h2 style="font-size:1.05rem;margin-top:0">{{ t('Чат с клиентом') }}</h2>
       <p class="small muted" style="margin-top:0">
-        Сообщения видны клиенту мгновенно.
+        {{ t('Сообщения видны клиенту мгновенно.') }}
       </p>
 
       <section class="chat" data-chat data-ws-path="{{ ws_path }}">
         <div class="chat__header">
-          <strong>Чат с клиентом</strong>
+          <strong>{{ t('Чат с клиентом') }}</strong>
           <span class="spacer"></span>
           <span class="chat__status">
             <span class="chat__dot" data-chat-status></span>
@@ -39,7 +39,7 @@
         </div>
 
         <div class="chat__log" data-chat-log role="log" aria-live="polite"
-             aria-label="История сообщений">
+             aria-label="{{ t('История сообщений') }}">
           {% for message in messages %}
             {% if message.kind.value == 'system' %}
               <div class="chat__msg chat__msg--system">
@@ -60,22 +60,22 @@
         <div class="chat__typing" data-chat-typing aria-live="polite"></div>
 
         <form class="chat__form" data-chat-form autocomplete="off">
-          <label class="sr-only" for="admin-chat-input">Сообщение клиенту</label>
+          <label class="sr-only" for="admin-chat-input">{{ t('Сообщение клиенту') }}</label>
           <textarea class="chat__input" id="admin-chat-input" name="text" rows="1"
-                    maxlength="2000" placeholder="Ответьте клиенту…"
+                    maxlength="2000" placeholder="{{ t('Ответьте клиенту…') }}"
                     data-chat-input required></textarea>
-          <button class="btn btn--primary" type="submit">Отправить</button>
+          <button class="btn btn--primary" type="submit">{{ t('Отправить') }}</button>
         </form>
       </section>
       <p class="tiny dim" style="margin:12px 0 0">
-        Сообщения сохраняются в истории заказа. Не отправляйте персональные данные.
+        {{ t('Сообщения сохраняются в истории заказа. Не отправляйте персональные данные.') }}
       </p>
     </div>
   </div>
 
   <aside class="detail-side">
     <div class="card">
-      <span class="tiny dim">Клиент</span>
+      <span class="tiny dim">{{ t('Клиент') }}</span>
       <div class="row" style="margin-top:6px">
         <span class="avatar avatar--sm">
           {% if order.user and order.user.avatar_url %}
@@ -85,32 +85,32 @@
           {% else %}?{% endif %}
         </span>
         <div>
-          <strong>{{ order.user.display_name if order.user else 'Удалён' }}</strong>
+          <strong>{{ order.user.display_name if order.user else t('Удалён') }}</strong>
           <div class="tiny dim">{{ order.user.email if order.user else '' }}</div>
         </div>
       </div>
 
       <ul class="meta-list" style="margin-top:16px">
         <li class="meta-list__row">
-          <span class="meta-list__label">Услуга</span>
+          <span class="meta-list__label">{{ t('Услуга') }}</span>
           <span class="meta-list__value">{{ order.service_title }}</span>
         </li>
         <li class="meta-list__row">
-          <span class="meta-list__label">Создан</span>
+          <span class="meta-list__label">{{ t('Создан') }}</span>
           <span class="meta-list__value">{{ order.created_at | datetime_ru }}</span>
         </li>
         <li class="meta-list__row">
-          <span class="meta-list__label">Обновлён</span>
+          <span class="meta-list__label">{{ t('Обновлён') }}</span>
           <span class="meta-list__value">{{ order.updated_at | datetime_ru }}</span>
         </li>
       </ul>
     </div>
 
     <div class="card" style="margin-top:16px">
-      <h3 style="font-size:1rem;margin-top:0">Статус</h3>
+      <h3 style="font-size:1rem;margin-top:0">{{ t('Статус') }}</h3>
       <form method="post" action="/dashboard/orders/{{ order.id }}/status">
         <input type="hidden" name="{{ csrf_field_name }}" value="{{ csrf_token }}">
-        <select class="input" name="status" aria-label="Статус заказа">
+        <select class="input" name="status" aria-label="{{ t('Статус заказа') }}">
           {% for item in statuses %}
             <option value="{{ item.value }}" {% if item == order.status %}selected{% endif %}>
               {{ item.label }}
@@ -118,23 +118,23 @@
           {% endfor %}
         </select>
         <button class="btn btn--primary btn--block" type="submit" style="margin-top:10px">
-          Сохранить статус
+          {{ t('Сохранить статус') }}
         </button>
       </form>
     </div>
 
     <div class="card" style="margin-top:16px">
-      <h3 style="font-size:1rem;margin-top:0">Итоговая стоимость</h3>
+      <h3 style="font-size:1rem;margin-top:0">{{ t('Итоговая стоимость') }}</h3>
       <form method="post" action="/dashboard/orders/{{ order.id }}/price">
         <input type="hidden" name="{{ csrf_field_name }}" value="{{ csrf_token }}">
         <input class="input" type="text" inputmode="decimal" name="price"
                value="{{ '%.2f' | format(order.price_final) if order.price_final is not none else '' }}"
-               placeholder="например 45000" aria-label="Итоговая стоимость">
+               placeholder="{{ t('например 45000') }}" aria-label="{{ t('Итоговая стоимость') }}">
         <p class="tiny dim" style="margin:6px 0 0">
-          Пустое поле сбрасывает цену. Клиент увидит изменение в чате.
+          {{ t('Пустое поле сбрасывает цену. Клиент увидит изменение в чате.') }}
         </p>
         <button class="btn btn--primary btn--block" type="submit" style="margin-top:10px">
-          Сохранить цену
+          {{ t('Сохранить цену') }}
         </button>
       </form>
     </div>

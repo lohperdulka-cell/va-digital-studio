@@ -1,26 +1,26 @@
 {% extends "base.html" %}
-{% block title %}{% block dash_title %}Дашборд{% endblock %} · {{ app_name }}{% endblock %}
+{% block title %}{% block dash_title %}{{ t('Дашборд') }}{% endblock %} · {{ app_name }}{% endblock %}
 
 {% block content %}
 <div class="container">
-  <nav class="breadcrumbs" aria-label="Навигация">
-    <a href="/">Главная</a>
+  <nav class="breadcrumbs" aria-label="{{ t('Навигация') }}">
+    <a href="/">{{ t('Главная') }}</a>
     <span class="breadcrumbs__sep">/</span>
-    <a href="/dashboard">Дашборд</a>
+    <a href="/dashboard">{{ t('Дашборд') }}</a>
     {% block crumbs %}{% endblock %}
   </nav>
 
   <div class="dash">
-    <nav class="dash__nav" aria-label="Разделы дашборда">
+    <nav class="dash__nav" aria-label="{{ t('Разделы дашборда') }}">
       {% set sections = [
-        ('/dashboard', 'Обзор', '📊', none),
-        ('/dashboard/orders', 'Заказы', '📦', nav_orders_unread),
-        ('/dashboard/chats', 'Чаты', '💬', nav_chats_unread),
-        ('/dashboard/support', 'Поддержка', '🎧', nav_tickets_open),
-        ('/dashboard/services', 'Услуги', '🧩', none),
-        ('/dashboard/cases', 'Кейсы', '🗂', none),
-        ('/dashboard/reviews', 'Отзывы', '⭐', nav_reviews_pending),
-        ('/dashboard/news', 'Новости', '📰', none)
+        ('/dashboard', t('Обзор'), '📊', none),
+        ('/dashboard/orders', t('Заказы'), '📦', nav_orders_unread),
+        ('/dashboard/chats', t('Чаты'), '💬', nav_chats_unread),
+        ('/dashboard/support', t('Поддержка'), '🎧', nav_tickets_open),
+        ('/dashboard/services', t('Услуги'), '🧩', none),
+        ('/dashboard/cases', t('Кейсы'), '🗂', none),
+        ('/dashboard/reviews', t('Отзывы'), '⭐', nav_reviews_pending),
+        ('/dashboard/news', t('Новости'), '📰', none)
       ] %}
       {% for href, label, icon, count in sections %}
         <a class="dash__link {% if path == href or (href != '/dashboard' and path.startswith(href)) %}is-active{% endif %}"
