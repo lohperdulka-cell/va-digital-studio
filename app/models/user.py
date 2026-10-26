@@ -29,6 +29,12 @@ class User(Base):
         String(64), unique=True, index=True, default=None
     )
     email: Mapped[str] = mapped_column(String(320), unique=True, index=True)
+    # Public handle chosen at registration, stored lower-cased so uniqueness is
+    # case-insensitive.  NULL for accounts that never picked one (Google-only or
+    # Telegram-only); such an account signs in with its e-mail.
+    username: Mapped[str | None] = mapped_column(
+        String(32), unique=True, index=True, default=None
+    )
     name: Mapped[str] = mapped_column(String(200), default="")
     avatar_url: Mapped[str | None] = mapped_column(String(1024), default=None)
 
@@ -88,7 +94,12 @@ class User(Base):
 
     @property
     def display_name(self) -> str:
-        return self.name or self.email.split("@")[0]
+        return self.name or self.username or self.email.split("@")[0]
+
+    @property
+    def handle(self) -> str:
+        """The ``@name`` shown in the UI; falls back to the e-mail local part."""
+        return self.username or self.email.split("@")[0]
 
     @property
     def has_password(self) -> bool:

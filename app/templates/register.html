@@ -19,9 +19,14 @@
       {{ text_input("name", "Имя", value=values.get("name", ""),
                     placeholder="Как к вам обращаться", autocomplete="name",
                     required=false, maxlength=200, field_errors=field_errors) }}
+      {{ text_input("username", "Логин", value=values.get("username", ""),
+                    placeholder="например, ivan_dev", autocomplete="username",
+                    maxlength=32,
+                    hint="3–32 символа: латинские буквы, цифры, точка, дефис, подчёркивание",
+                    field_errors=field_errors) }}
       {{ text_input("email", "E-mail", type="email", value=values.get("email", ""),
                     placeholder="you@example.com", autocomplete="email",
-                    autofocus=true, field_errors=field_errors) }}
+                    field_errors=field_errors) }}
       {{ text_input("password", "Пароль", type="password", value="",
                     placeholder="Минимум 8 символов, буквы и цифры",
                     autocomplete="new-password", maxlength=200,

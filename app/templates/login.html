@@ -19,9 +19,10 @@
       <input type="hidden" name="{{ csrf_field_name }}" value="{{ csrf_token }}">
       <input type="hidden" name="next" value="{{ next_url }}">
 
-      {{ text_input("email", "E-mail", type="email", value=values.get("email", ""),
-                    placeholder="you@example.com", autocomplete="email",
-                    autofocus=true, field_errors=field_errors) }}
+      {{ text_input("login", "E-mail или логин", value=values.get("login", ""),
+                    placeholder="you@example.com или ваш логин",
+                    autocomplete="username", autofocus=true,
+                    maxlength=320, field_errors=field_errors) }}
       {{ text_input("password", "Пароль", type="password", value="",
                     placeholder="Ваш пароль", autocomplete="current-password",
                     maxlength=200, field_errors=field_errors) }}

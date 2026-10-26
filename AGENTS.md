@@ -67,7 +67,7 @@ Hosting is **Render**, decided by the user. Key facts learned the hard way:
 - `BASE_URL` is derived from `RENDER_EXTERNAL_URL`; set it explicitly only for
   a custom domain. `DATABASE_URL` is injected from the managed database.
 
-## E-mail (sign-in codes and support replies)
+## E-mail (support replies)
 
 Sent from `app/services/mailer.py` over one of two transports.
 
@@ -93,6 +93,16 @@ Sent from `app/services/mailer.py` over one of two transports.
 - Mail is only used for support replies now. E-mail-code sign-in was removed
   because Render's free plan makes outbound mail unreliable; sign-in is
   e-mail+password, Google, or Telegram (`app/routes/login.py`).
+
+## Sign-in
+
+- The sign-in field is a single **login**: an e-mail address or the `username`
+  chosen at registration (`accounts.find_by_login` decides by the `@`).
+- `username` is stored lower-cased and unique; it is NULL for Google-only and
+  Telegram-only accounts, which sign in with their e-mail.
+- Registration requires `username`, `email`, `password`, `password_confirm`.
+  `UsernameTakenError` and `EmailTakenError` are reported to the user on
+  purpose — the rate limiter blunts enumeration.
 
 ## Git
 

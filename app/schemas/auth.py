@@ -5,6 +5,9 @@ lower-cased and length-bounded, the password policy runs here (so a bad
 password is rejected before it reaches the hasher), and every free-text field
 is stripped.  Pydantic's ``EmailStr`` rejects malformed addresses outright,
 which is the first line of defence against junk reaching the database.
+
+The sign-in field is a *login*, which may be either an e-mail address or the
+login name chosen at registration.
 """
 
 from __future__ import annotations
@@ -29,10 +32,17 @@ from app.security.tokens import safe_next_path
 
 # A six-digit code; the field is kept as a string so leading zeros survive.
 _CODE_RE = re.compile(r"^\d{6}$")
+# Deliberately permissive: it only rejects input that cannot be an address, so
+# the login field can accept a bare login name without a full RFC parser.
+_EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 _NAME_MAX = 200
 _EMAIL_MAX = 320
 _PASSWORD_MAX = 200
+_USERNAME_MIN = 3
+_USERNAME_MAX = 32
+# Letters, digits, dot, dash and underscore: readable in a URL and unambiguous.
+_USERNAME_RE = re.compile(r"^[a-zA-Z0-9._-]+$")
 
 
 class _Base(BaseModel):
@@ -45,11 +55,18 @@ def _lowercase_email(value: str) -> str:
 
 
 class LoginForm(_Base):
-    email: EmailStr
+    login: str = Field(min_length=1, max_length=_EMAIL_MAX)
     password: str = Field(min_length=1, max_length=_PASSWORD_MAX)
     next: str = ""
 
-    _normalise_email = field_validator("email")(_lowercase_email)
+    @field_validator("login")
+    @classmethod
+    def _clean_login(cls, value: str) -> str:
+        """Trim and lower-case; an e-mail must still look like one."""
+        cleaned = value.strip().lower()
+        if "@" in cleaned and not _EMAIL_RE.match(cleaned):
+            raise ValueError("Проверьте адрес e-mail")
+        return cleaned
 
     @field_validator("next")
     @classmethod
@@ -59,12 +76,23 @@ class LoginForm(_Base):
 
 
 class RegisterForm(_Base):
+    username: str = Field(min_length=_USERNAME_MIN, max_length=_USERNAME_MAX)
     email: EmailStr
     password: str = Field(min_length=1, max_length=_PASSWORD_MAX)
     password_confirm: str = Field(min_length=1, max_length=_PASSWORD_MAX)
     name: str = Field(default="", max_length=_NAME_MAX)
 
     _normalise_email = field_validator("email")(_lowercase_email)
+
+    @field_validator("username")
+    @classmethod
+    def _clean_username(cls, value: str) -> str:
+        cleaned = value.strip().lower()
+        if not _USERNAME_RE.match(cleaned):
+            raise ValueError(
+                "Логин: только латинские буквы, цифры, точка, дефис и подчёркивание"
+            )
+        return cleaned
 
     @field_validator("password")
     @classmethod
@@ -90,10 +118,11 @@ class RegisterForm(_Base):
         return " ".join(value.split())
 
     @model_validator(mode="after")
-    def _password_not_from_email(self) -> RegisterForm:
-        """Re-run the policy with the address known, to catch 'ivan' in 'ivan123'."""
+    def _password_not_from_identity(self) -> RegisterForm:
+        """Re-run the policy with the identity known, to catch 'ivan' in 'ivan123'."""
         try:
             validate_password(self.password, email=str(self.email))
+            validate_password(self.password, email=self.username)
         except PasswordPolicyError as exc:
             raise ValueError(str(exc)) from exc
         return self

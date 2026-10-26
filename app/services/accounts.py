@@ -109,30 +109,56 @@ class EmailTakenError(Exception):
     """Raised when registration hits an address that already exists."""
 
 
+class UsernameTakenError(Exception):
+    """Raised when the chosen login name is already in use."""
+
+
 def find_by_email(db: Session, email: str) -> User | None:
     return db.scalar(select(User).where(User.email == normalize_email(email)))
+
+
+def find_by_username(db: Session, username: str) -> User | None:
+    return db.scalar(select(User).where(User.username == normalize_username(username)))
+
+
+def find_by_login(db: Session, identifier: str) -> User | None:
+    """Resolve the sign-in field, which accepts either an e-mail or a login."""
+    value = (identifier or "").strip()
+    if "@" in value:
+        return find_by_email(db, value)
+    return find_by_username(db, value)
 
 
 def normalize_email(email: str) -> str:
     return (email or "").strip().lower()
 
 
+def normalize_username(username: str) -> str:
+    """Lower-case the login so ``Ivan`` and ``ivan`` are the same account."""
+    return (username or "").strip().lower()
+
+
 def register_with_password(
-    db: Session, *, email: str, password: str, name: str = ""
+    db: Session, *, email: str, password: str, name: str = "", username: str = ""
 ) -> User:
     """Create an email+password account.
 
-    Raises :class:`EmailTakenError` when the address already has an account;
-    the caller decides whether to say so (an honest message here is more useful
-    than a vague one, and the rate limiter blunts enumeration).
+    Raises :class:`EmailTakenError` or :class:`UsernameTakenError` when the
+    address or login is already used; the caller decides whether to say so (an
+    honest message here is more useful than a vague one, and the rate limiter
+    blunts enumeration).
     """
     address = normalize_email(email)
+    handle = normalize_username(username)
     existing = find_by_email(db, address)
     if existing is not None:
         raise EmailTakenError("Аккаунт с таким e-mail уже существует — войдите")
+    if handle and find_by_username(db, handle) is not None:
+        raise UsernameTakenError("Этот логин уже занят — выберите другой")
 
     user = User(
         email=address,
+        username=handle or None,
         name=(name or "").strip(),
         password_hash=hash_password(password),
     )
@@ -149,13 +175,14 @@ def register_with_password(
     return user
 
 
-def authenticate_password(db: Session, *, email: str, password: str) -> User | None:
+def authenticate_password(db: Session, *, login: str, password: str) -> User | None:
     """Return the user when the password is right, else ``None``.
 
-    Deliberately returns the same result for "no such account" and "wrong
-    password" so the response cannot be used to probe for addresses.
+    ``login`` is the e-mail address or the login name.  Deliberately returns the
+    same result for "no such account" and "wrong password" so the response
+    cannot be used to probe for addresses.
     """
-    user = find_by_email(db, email)
+    user = find_by_login(db, login)
     if user is None or not user.is_active:
         # Spend comparable time on a missing account so timing does not leak.
         verify_password(password, _DUMMY_HASH)

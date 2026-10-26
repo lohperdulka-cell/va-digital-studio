@@ -39,7 +39,7 @@ from app.security.sessions import issue_session
 from app.security.tokens import safe_next_path
 from app.services import accounts as account_service
 from app.services import login_codes, telegram
-from app.services.accounts import EmailTakenError
+from app.services.accounts import EmailTakenError, UsernameTakenError
 from app.services.login_codes import CodeError
 from app.templating import render
 
@@ -109,29 +109,29 @@ def login_page(request: Request) -> Response:
 def login_submit(
     request: Request,
     db: DbSession,
-    email: str = Form(default=""),
+    login: str = Form(default=""),
     password: str = Form(default=""),
     next: str = Form(default=""),
 ) -> Response:
     try:
-        form = LoginForm(email=email, password=password, next=next)
+        form = LoginForm(login=login, password=password, next=next)
     except ValidationError as exc:
         return _render_login(
             request,
             field_errors=_form_values(exc),
-            values={"email": email},
+            values={"login": login},
             status_code=400,
         )
 
     user = account_service.authenticate_password(
-        db, email=form.email, password=form.password
+        db, login=form.login, password=form.password
     )
     if user is None:
-        logger.info("Rejected password login for %s", form.email)
+        logger.info("Rejected password login for %s", form.login)
         return _render_login(
             request,
-            errors=["Неверный e-mail или пароль"],
-            values={"email": form.email},
+            errors=["Неверный e-mail/логин или пароль"],
+            values={"login": form.login},
             status_code=401,
         )
 
@@ -164,6 +164,7 @@ def register_page(request: Request) -> Response:
 def register_submit(
     request: Request,
     db: DbSession,
+    username: str = Form(default=""),
     email: str = Form(default=""),
     password: str = Form(default=""),
     password_confirm: str = Form(default=""),
@@ -171,6 +172,7 @@ def register_submit(
 ) -> Response:
     try:
         form = RegisterForm(
+            username=username,
             email=email,
             password=password,
             password_confirm=password_confirm,
@@ -183,7 +185,7 @@ def register_submit(
             {
                 "errors": [],
                 "field_errors": _form_values(exc),
-                "values": {"email": email, "name": name},
+                "values": {"email": email, "name": name, "username": username},
                 "google_enabled": settings.oauth_configured,
                 "next_url": _next_from(request),
             },
@@ -192,16 +194,24 @@ def register_submit(
 
     try:
         user = account_service.register_with_password(
-            db, email=form.email, password=form.password, name=form.name
+            db,
+            email=form.email,
+            password=form.password,
+            name=form.name,
+            username=form.username,
         )
-    except (EmailTakenError, PasswordPolicyError) as exc:
+    except (
+        EmailTakenError,
+        UsernameTakenError,
+        PasswordPolicyError,
+    ) as exc:
         return render(
             request,
             "register.html",
             {
                 "errors": [str(exc)],
                 "field_errors": {},
-                "values": {"email": email, "name": name},
+                "values": {"email": email, "name": name, "username": username},
                 "google_enabled": settings.oauth_configured,
                 "next_url": _next_from(request),
             },
