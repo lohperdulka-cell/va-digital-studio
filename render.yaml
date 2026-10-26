@@ -8,8 +8,9 @@ databases:
   - name: va-studio-db
     databaseName: va_studio
     user: va_studio
-    # Free instances are fine for a demo but expire after 30 days and cannot be
-    # backed up; use at least `basic-256mb` for anything real.
+    # Free Postgres needs no payment method, but it expires 30 days after
+    # creation.  Before that happens, either upgrade this to `basic-256mb` or
+    # recreate the database and let the app re-bootstrap its content.
     plan: free
     region: frankfurt
 
@@ -21,7 +22,10 @@ services:
     # The image's CMD already runs migrations then the server; stating it here
     # keeps the dashboard readable.
     dockerCommand: /app/start.sh
-    plan: starter
+    # `free` is what makes the deploy card-free.  A paid plan (starter, etc.)
+    # is what triggers Render's "add a payment method" step.  Free web
+    # services spin down after 15 minutes idle and take ~1 minute to wake.
+    plan: free
     region: frankfurt
     healthCheckPath: /healthz
     autoDeploy: true
