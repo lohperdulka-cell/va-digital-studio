@@ -86,7 +86,7 @@ class Settings(BaseSettings):
     rate_limit_window_seconds: int = 60
 
     # --- Support -----------------------------------------------------------
-    support_email: str = "support@vadigital.studio"
+    support_email: str = "ethernallhatred@gmail.com"
     smtp_host: str = ""
     smtp_port: int = 587
     smtp_user: str = ""

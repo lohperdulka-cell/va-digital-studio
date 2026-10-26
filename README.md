@@ -64,7 +64,7 @@ cp .env.example .env             # затем откройте .env и зада�
 python -c "import secrets; print(secrets.token_urlsafe(64))"   # вставьте вывод в SECRET_KEY
 
 alembic upgrade head             # создать схему
-python -m app.seed               # 6 услуг, 3 новости, назначить админов из ADMIN_EMAILS
+python -m app.seed               # 4 услуги, 4 новости, назначить админов из ADMIN_EMAILS
 
 uvicorn app.main:app --reload    # http://localhost:8000
 ```
@@ -143,7 +143,7 @@ docker compose down -v                           # остановить и уд�
 **1. Через `.env`** — подходит для команды, которая ещё не заходила в систему:
 
 ```env
-ADMIN_EMAILS=you@gmail.com,admin@vadigital.com
+ADMIN_EMAILS=you@gmail.com,admin@example.com
 ```
 
 Любой пользователь, вошедший с таким e-mail, получает права администратора
@@ -172,6 +172,7 @@ docker compose exec app python -m app.cli make_admin user@example.com
 ## Команды
 
 ```bash
+python -m app.seed --bootstrap        # старт: залить пустой каталог + синхронизировать админов
 python -m app.seed                    # услуги, новости, админы из ADMIN_EMAILS
 python -m app.seed --reset            # пересоздать демо-контент
 python -m app.cli <команда>           # управление администраторами
@@ -309,8 +310,11 @@ va_digital_studio/
    | `WEB_CONCURRENCY` | `1` (см. «Масштабирование») |
 
 5. Запустите первый деплой — миграции применятся автоматически.
-6. Залейте демо-данные (одноразово, из Shell на Render):
-   `python -m app.seed`.
+
+Демо-контент заливается **сам** при старте: `start.sh` вызывает
+`python -m app.seed --bootstrap`, который наполняет каталог, только если он
+пуст, и синхронизирует права админов из `ADMIN_EMAILS`. Ручной запуск и Shell
+не нужны — это важно для бесплатных тарифов, где Shell недоступен.
 
 `BASE_URL` можно не задавать: он выведется из `RENDER_EXTERNAL_URL`. Если
 задаёте свой домен — укажите `BASE_URL=https://ваш-домен`.

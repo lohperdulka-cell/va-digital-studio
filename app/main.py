@@ -30,6 +30,7 @@ from app.routes import services as service_routes
 from app.security.csrf import CsrfCookieMiddleware
 from app.security.headers import SecurityHeadersMiddleware
 from app.security.ratelimit import RateLimitMiddleware
+from app.seed import bootstrap as bootstrap_content
 from app.templating import STATIC_DIR, render
 
 logger = get_logger(__name__)
@@ -59,6 +60,19 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
             settings.base_url,
             settings.google_redirect_uri,
         )
+
+    # start.sh already bootstraps; this covers hosts that run the ASGI app
+    # directly (e.g. a dashboard Start Command of `gunicorn app.main:app`), where
+    # start.sh never executes.  Both paths are idempotent, and the seeding step
+    # only touches an empty catalogue.  Never fatal: a content problem must not
+    # stop the site from serving.  Skipped under APP_ENV=test so the suite keeps
+    # controlling its own fixtures.
+    if settings.app_env.lower() not in {"test", "testing"}:
+        try:
+            bootstrap_content()
+        except Exception:
+            logger.exception("Content bootstrap failed — continuing without it")
+
     yield
     engine.dispose()
     logger.info("Shutdown complete")

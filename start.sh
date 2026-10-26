@@ -19,6 +19,14 @@ WORKERS="${WEB_CONCURRENCY:-1}"
 echo "[start] applying database migrations"
 alembic upgrade head
 
+# Fill an empty catalogue and sync ADMIN_EMAILS on every boot.  This is what
+# makes a card-free host (no Shell access) usable: the free tiers on Render and
+# Back4App give you no way to run `python -m app.seed` by hand.  Failures here
+# are logged but never block the server — a content problem must not take the
+# site down.
+echo "[start] bootstrapping content and admin rights"
+python -m app.seed --bootstrap || echo "[start] WARNING: bootstrap failed, continuing"
+
 echo "[start] serving on ${HOST}:${PORT} with ${WORKERS} worker(s)"
 
 if command -v gunicorn >/dev/null 2>&1; then

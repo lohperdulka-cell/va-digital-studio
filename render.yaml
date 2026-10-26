@@ -63,7 +63,7 @@ services:
 
       # --- Optional e-mail -------------------------------------------------
       - key: SUPPORT_EMAIL
-        value: support@vadigital.studio
+        value: ethernallhatred@gmail.com
       - key: SMTP_HOST
         sync: false
       - key: SMTP_PORT

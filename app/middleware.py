@@ -6,6 +6,7 @@ from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoin
 from starlette.requests import Request
 from starlette.responses import Response
 
+from app.config import settings
 from app.database import SessionLocal
 from app.logging_config import get_logger
 from app.security.sessions import user_from_request
@@ -31,6 +32,14 @@ class CurrentUserMiddleware(BaseHTTPMiddleware):
             try:
                 user = user_from_request(request, db)
                 if user is not None:
+                    # Self-heal admin rights from ADMIN_EMAILS on every request.
+                    # The JWT never carries the flag (it is read from the row),
+                    # so an address added to ADMIN_EMAILS takes effect without a
+                    # fresh login.  Only writes when the value actually changes.
+                    if not user.is_admin and user.email in settings.admin_email_list:
+                        user.is_admin = True
+                        db.commit()
+                        logger.info("Granted admin via ADMIN_EMAILS to %s", user.email)
                     # Detach: the row is read-only here and the session closes
                     # before the route's own session opens.
                     db.expunge(user)
