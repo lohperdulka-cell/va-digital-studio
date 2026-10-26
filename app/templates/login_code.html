@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% from "partials/auth_fields.html" import text_input, error_summary, divider %}
+
+{% block title %}Вход по коду — {{ app_name }}{% endblock %}
+{% block description %}Войдите без пароля: получите 6-значный код на почту и введите его.{% endblock %}
+{% block main_class %}page auth-page{% endblock %}
+
+{% block content %}
+<section class="auth">
+  <div class="auth__card">
+    {% if stage == "verify" %}
+      <h1 class="auth__title">Введите код</h1>
+      <p class="auth__lead">
+        Мы отправили 6-значный код на <strong>{{ sent_to }}</strong>.
+        Код действует 10 минут.
+      </p>
+
+      {{ error_summary(errors) }}
+
+      <form class="form" method="post" action="/auth/code/verify">
+        <input type="hidden" name="{{ csrf_field_name }}" value="{{ csrf_token }}">
+        <input type="hidden" name="email" value="{{ sent_to }}">
+        <input type="hidden" name="next" value="{{ next_url }}">
+
+        {{ text_input("code", "Код из письма", value="", placeholder="123456",
+                      inputmode="numeric", autocomplete="one-time-code",
+                      autofocus=true, maxlength=6, field_errors=field_errors) }}
+
+        <button type="submit" class="btn btn--primary btn--block">Войти</button>
+      </form>
+
+      <p class="auth__alt">
+        Не пришло письмо?
+        <a href="/auth/code?next={{ next_url | urlencode }}">Отправить снова</a>
+      </p>
+    {% else %}
+      <h1 class="auth__title">Вход по коду</h1>
+      <p class="auth__lead">
+        Укажите e-mail — пришлём 6-значный код. Пароль не нужен.
+      </p>
+
+      {{ error_summary(errors) }}
+
+      <form class="form" method="post" action="/auth/code">
+        <input type="hidden" name="{{ csrf_field_name }}" value="{{ csrf_token }}">
+        <input type="hidden" name="next" value="{{ next_url }}">
+
+        {{ text_input("email", "E-mail", type="email", value=values.get("email", ""),
+                      placeholder="you@example.com", autocomplete="email",
+                      autofocus=true, field_errors=field_errors) }}
+
+        <button type="submit" class="btn btn--primary btn--block">Получить код</button>
+      </form>
+    {% endif %}
+
+    {{ divider() }}
+
+    <div class="auth__methods">
+      <a class="btn btn--ghost btn--block" href="/auth/login?next={{ next_url | urlencode }}">
+        ← Войти с паролем
+      </a>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -41,7 +41,7 @@
       <a class="drawer__link {% if path.startswith('/dashboard') %}is-active{% endif %}" href="/dashboard">🛠 Дашборд</a>
     {% endif %}
   {% else %}
-    <a class="drawer__link" href="/auth/login?next={{ next_url | urlencode }}">🔑 Войти через Google</a>
+    <a class="drawer__link" href="/auth/login?next={{ next_url | urlencode }}">🔑 Войти</a>
   {% endif %}
 
   <div class="drawer__divider"></div>

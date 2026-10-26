@@ -340,10 +340,19 @@ def test_inactive_user_session_is_rejected(db, make_user):
 # --- OAuth routes ----------------------------------------------------------
 
 
-def test_login_without_credentials_shows_configuration_error(client):
-    response = client.get("/auth/login", follow_redirects=False)
+def test_google_login_without_credentials_shows_configuration_error(client):
+    """The Google entry point lives at /auth/google now; /auth/login is the form."""
+    response = client.get("/auth/google", follow_redirects=False)
     assert response.status_code == 503
     assert "не настроен" in response.text
+
+
+def test_login_page_renders_without_google_credentials(client):
+    """Email+password sign-in works even with no Google credentials at all."""
+    response = client.get("/auth/login", follow_redirects=False)
+    assert response.status_code == 200
+    assert 'action="/auth/login"' in response.text
+    assert "Продолжить с Google" not in response.text
 
 
 def test_callback_without_state_is_refused(client):
@@ -436,7 +445,7 @@ def test_configured_oauth_builds_a_real_google_authorize_url(monkeypatch, client
     monkeypatch.setattr(settings, "google_client_id", "test-client-id")
     monkeypatch.setattr(settings, "google_client_secret", "test-client-secret")
 
-    response = client.get("/auth/login?next=/profile", follow_redirects=False)
+    response = client.get("/auth/google?next=/profile", follow_redirects=False)
 
     assert response.status_code == 302
     location = response.headers["location"]
@@ -459,7 +468,7 @@ def test_state_cookie_matches_the_state_sent_to_google(monkeypatch, client):
     monkeypatch.setattr(settings, "google_client_id", "test-client-id")
     monkeypatch.setattr(settings, "google_client_secret", "test-client-secret")
 
-    response = client.get("/auth/login", follow_redirects=False)
+    response = client.get("/auth/google", follow_redirects=False)
     url_state = response.headers["location"].split("state=")[1].split("&")[0]
     cookie_state = client.cookies.get(STATE_COOKIE_NAME)
 

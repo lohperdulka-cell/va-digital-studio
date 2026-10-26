@@ -20,6 +20,8 @@ from app.config import settings
 
 SESSION_TYP: Final = "session"
 OAUTH_STATE_TYP: Final = "oauth_state"
+# Signed payload handed to the Telegram bot as /start <payload>.
+TELEGRAM_START_TYP: Final = "telegram_start"
 
 STATE_TTL_SECONDS: Final = 600  # 10 minutes is plenty for a login round-trip
 
@@ -105,6 +107,35 @@ def create_state_token(next_path: str) -> tuple[str, str]:
 def decode_state_token(state: str) -> dict[str, Any] | None:
     claims = _decode(state)
     if claims is None or claims.get("typ") != OAUTH_STATE_TYP:
+        return None
+    return claims
+
+
+# --- Telegram login payload ------------------------------------------------
+
+
+def create_telegram_start_token(email: str) -> str:
+    """Signed ``/start`` payload binding a Telegram chat to a known e-mail.
+
+    The e-mail is inside a signed token, so the bot cannot be tricked into
+    attaching a chat to an address the visitor did not ask for.
+    """
+    return _encode(
+        {
+            "sub": email,
+            "email": email,
+            "typ": TELEGRAM_START_TYP,
+            "iss": settings.jwt_issuer,
+            "iat": _now(),
+            "exp": _now() + timedelta(seconds=STATE_TTL_SECONDS),
+            "jti": secrets.token_urlsafe(16),
+        }
+    )
+
+
+def decode_telegram_start_token(payload: str) -> dict[str, Any] | None:
+    claims = _decode(payload)
+    if claims is None or claims.get("typ") != TELEGRAM_START_TYP:
         return None
     return claims
 

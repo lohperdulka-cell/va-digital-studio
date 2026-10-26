@@ -23,6 +23,7 @@ from app.middleware import CurrentUserMiddleware
 from app.routes import admin as admin_routes
 from app.routes import auth as auth_routes
 from app.routes import chat as chat_routes
+from app.routes import login as login_routes
 from app.routes import news as news_routes
 from app.routes import pages as page_routes
 from app.routes import profile as profile_routes
@@ -48,8 +49,9 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
     )
     if not settings.oauth_configured:
         logger.warning(
-            "GOOGLE_CLIENT_ID/GOOGLE_CLIENT_SECRET are unset — /auth/login will "
-            "show a configuration error page."
+            "GOOGLE_CLIENT_ID/GOOGLE_CLIENT_SECRET are unset — the Google "
+            "button is hidden. Email+password, e-mail code and Telegram "
+            "sign-in still work."
         )
     elif settings.base_url_is_local and settings.is_production:
         # The single most common misconfiguration: BASE_URL still points at
@@ -107,6 +109,7 @@ app.add_middleware(SecurityHeadersMiddleware)
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 app.include_router(auth_routes.router)
+app.include_router(login_routes.router)
 app.include_router(page_routes.router)
 app.include_router(service_routes.router)
 app.include_router(news_routes.router)

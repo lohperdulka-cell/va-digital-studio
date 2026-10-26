@@ -7,6 +7,7 @@ from app.models.enums import (
     ServiceCategory,
     TicketStatus,
 )
+from app.models.login_code import LoginCode
 from app.models.news import News, NewsLike
 from app.models.order import Order
 from app.models.service import Service
@@ -15,6 +16,7 @@ from app.models.user import User
 
 __all__ = [
     "ChatMessage",
+    "LoginCode",
     "MessageKind",
     "News",
     "NewsLike",

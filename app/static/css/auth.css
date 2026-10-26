@@ -1,0 +1,80 @@
+/* --- Sign-in pages ------------------------------------------------------- */
+
+.auth-page {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 48px 20px 72px;
+}
+
+.auth {
+  width: 100%;
+  max-width: 460px;
+}
+
+.auth__card {
+  background: var(--gradient-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 32px;
+}
+
+.auth__title {
+  margin: 0 0 8px;
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.auth__lead {
+  margin: 0 0 22px;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.auth__alt {
+  margin: 16px 0 0;
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.auth__alt a { color: var(--accent-2); }
+
+.auth__methods {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.auth__note {
+  margin: 18px 0 0;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.auth__divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 22px 0;
+  color: var(--text-dim);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.auth__divider::before,
+.auth__divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border-soft);
+}
+
+@media (max-width: 520px) {
+  .auth__card { padding: 24px 18px; }
+  .auth-page { padding: 24px 14px 56px; }
+}

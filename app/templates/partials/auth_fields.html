@@ -1,0 +1,53 @@
+{# Shared building blocks for the sign-in forms.
+
+   Kept as macros so every auth page renders inputs, hints and errors the same
+   way and no page has to remember the accessibility wiring. #}
+
+{% macro field_messages(errors_by_field, name) -%}
+  {% for message in errors_by_field.get(name, []) %}
+    <span class="field__error">{{ message }}</span>
+  {% endfor %}
+{%- endmacro %}
+
+
+{% macro text_input(name, label, type="text", value="", placeholder="", autocomplete="", required=true, maxlength=320, hint="", autofocus=false, field_errors={}, inputmode="") -%}
+  <div class="field">
+    <label class="field__label" for="auth-{{ name }}">{{ label }}</label>
+    <input class="input"
+           type="{{ type }}"
+           id="auth-{{ name }}"
+           name="{{ name }}"
+           value="{{ value }}"
+           {% if placeholder %}placeholder="{{ placeholder }}"{% endif %}
+           {% if autocomplete %}autocomplete="{{ autocomplete }}"{% endif %}
+           {% if inputmode %}inputmode="{{ inputmode }}"{% endif %}
+           {% if required %}required{% endif %}
+           {% if autofocus %}autofocus{% endif %}
+           maxlength="{{ maxlength }}">
+    {% if hint %}<span class="field__hint">{{ hint }}</span>{% endif %}
+    {{ field_messages(field_errors, name) }}
+  </div>
+{%- endmacro %}
+
+
+{% macro error_summary(errors) -%}
+  {% if errors %}
+    <div class="card card--flat" style="border-color:var(--danger)">
+      <ul class="small" style="margin:0;padding-left:18px">
+        {% for error in errors %}<li>{{ error }}</li>{% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+{%- endmacro %}
+
+
+{% macro google_button(next_url) -%}
+  <a class="btn btn--ghost btn--block" href="/auth/google?next={{ next_url | urlencode }}">
+    <span aria-hidden="true">G</span> Продолжить с Google
+  </a>
+{%- endmacro %}
+
+
+{% macro divider(text="или") -%}
+  <div class="auth__divider" role="separator" aria-label="{{ text }}"><span>{{ text }}</span></div>
+{%- endmacro %}

@@ -22,11 +22,24 @@ class User(Base):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    # Google's `sub` claim — the only stable account identifier we trust.
-    google_id: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    # Google's `sub` claim.  Nullable because an account may be created with
+    # email+password or Telegram and never linked to Google.
+    google_id: Mapped[str | None] = mapped_column(
+        String(64), unique=True, index=True, default=None
+    )
     email: Mapped[str] = mapped_column(String(320), unique=True, index=True)
     name: Mapped[str] = mapped_column(String(200), default="")
     avatar_url: Mapped[str | None] = mapped_column(String(1024), default=None)
+
+    # --- Email + password login -------------------------------------------
+    # NULL means "this account has no password" (Google-only or Telegram-only).
+    password_hash: Mapped[str | None] = mapped_column(String(255), default=None)
+
+    # --- Telegram login ----------------------------------------------------
+    telegram_id: Mapped[str | None] = mapped_column(
+        String(64), unique=True, index=True, default=None
+    )
+    telegram_username: Mapped[str | None] = mapped_column(String(64), default=None)
 
     balance: Mapped[Decimal] = mapped_column(
         Numeric(12, 2), default=Decimal("0.00"), nullable=False
@@ -72,6 +85,22 @@ class User(Base):
     @property
     def display_name(self) -> str:
         return self.name or self.email.split("@")[0]
+
+    @property
+    def has_password(self) -> bool:
+        return bool(self.password_hash)
+
+    @property
+    def login_methods(self) -> list[str]:
+        """Human-readable list of the ways this account can be entered."""
+        methods = []
+        if self.password_hash:
+            methods.append("email")
+        if self.google_id:
+            methods.append("google")
+        if self.telegram_id:
+            methods.append("telegram")
+        return methods
 
     def __repr__(self) -> str:  # pragma: no cover - debugging aid
         return f"<User id={self.id} email={self.email!r} admin={self.is_admin}>"

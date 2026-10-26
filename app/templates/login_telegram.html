@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% from "partials/auth_fields.html" import text_input, error_summary, divider %}
+
+{% block title %}Вход через Telegram — {{ app_name }}{% endblock %}
+{% block description %}Войдите в VA Digital Studio через Telegram-бота: бот пришлёт код для входа.{% endblock %}
+{% block main_class %}page auth-page{% endblock %}
+
+{% block content %}
+<section class="auth">
+  <div class="auth__card">
+    <h1 class="auth__title">Вход через Telegram</h1>
+
+    {% if not telegram_enabled %}
+      <p class="auth__lead">
+        Вход через Telegram пока не настроен на этом сервере.
+      </p>
+      <div class="auth__methods">
+        <a class="btn btn--ghost btn--block" href="/auth/login?next={{ next_url | urlencode }}">
+          ← Вернуться ко входу
+        </a>
+      </div>
+    {% else %}
+      {% if stage == "verify" %}
+        <p class="auth__lead">
+          Откройте бота <strong>@{{ bot_username }}</strong> и нажмите Start.
+          Бот пришлёт код — введите его здесь.
+        </p>
+
+        <div class="auth__methods" style="margin-bottom:16px">
+          <a class="btn btn--primary btn--block" href="{{ start_url }}"
+             target="_blank" rel="noopener">✈️ Открыть бота и получить код</a>
+        </div>
+
+        {{ error_summary(errors) }}
+
+        <form class="form" method="post" action="/auth/telegram/verify">
+          <input type="hidden" name="{{ csrf_field_name }}" value="{{ csrf_token }}">
+          <input type="hidden" name="email" value="{{ values.get('email', '') }}">
+          <input type="hidden" name="next" value="{{ next_url }}">
+
+          {{ text_input("code", "Код из Telegram", value="", placeholder="123456",
+                        inputmode="numeric", autocomplete="one-time-code",
+                        autofocus=true, maxlength=6, field_errors=field_errors) }}
+
+          <button type="submit" class="btn btn--primary btn--block">Войти</button>
+        </form>
+      {% else %}
+        <p class="auth__lead">
+          Укажите e-mail, который будет привязан к аккаунту, затем нажмите
+          Start в боте — он пришлёт код.
+        </p>
+
+        {{ error_summary(errors) }}
+
+        <form class="form" method="post" action="/auth/telegram">
+          <input type="hidden" name="{{ csrf_field_name }}" value="{{ csrf_token }}">
+          <input type="hidden" name="next" value="{{ next_url }}">
+
+          {{ text_input("email", "E-mail", type="email", value=values.get("email", ""),
+                        placeholder="you@example.com", autocomplete="email",
+                        autofocus=true, field_errors=field_errors) }}
+
+          <button type="submit" class="btn btn--primary btn--block">Продолжить в Telegram</button>
+        </form>
+      {% endif %}
+    {% endif %}
+
+    {{ divider() }}
+
+    <div class="auth__methods">
+      <a class="btn btn--ghost btn--block" href="/auth/login?next={{ next_url | urlencode }}">
+        ← Войти другим способом
+      </a>
+    </div>
+  </div>
+</section>
+{% endblock %}

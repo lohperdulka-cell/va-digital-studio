@@ -2,7 +2,7 @@
 
 Flow
 ----
-1. ``GET /auth/login`` mints a signed ``state`` token (CSRF protection for the
+1. ``GET /auth/google`` mints a signed ``state`` token (CSRF protection for the
    OAuth dance), stores it in a short-lived httponly cookie, and redirects to
    Google.  authlib also stashes its PKCE verifier and nonce in the encrypted
    Starlette session cookie.
@@ -12,6 +12,9 @@ Flow
 
 Defence in depth: the state is checked twice — once against our signed token
 and once inside authlib's own session store.
+
+Email+password, one-time e-mail codes and Telegram sign-in live in
+:mod:`app.routes.login`; ``/auth/login`` there is the ordinary sign-in page.
 """
 
 from __future__ import annotations
@@ -47,9 +50,15 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 logger = get_logger(__name__)
 
 
-@router.get("/login")
+@router.get("/google")
 async def login(request: Request, next: str | None = None) -> Response:
-    """Kick off the Google consent screen."""
+    """Kick off the Google consent screen.
+
+    Lives at ``/auth/google`` so ``/auth/login`` can be the ordinary sign-in
+    page (email + password) that visitors expect.  The old ``/auth/login``
+    Google entry point moved here; ``/auth/login`` still accepts ``?next=``
+    and forwards, which keeps existing links and the 401 redirect working.
+    """
     oauth = get_oauth()
     if oauth is None:
         logger.warning("Login attempted but Google OAuth is not configured")

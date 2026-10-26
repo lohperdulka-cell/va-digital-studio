@@ -92,6 +92,27 @@ class Settings(BaseSettings):
     smtp_user: str = ""
     smtp_password: str = ""
 
+    # --- Outbound e-mail (preferred names) ---------------------------------
+    # EMAIL_* wins over SMTP_* when both are set, so a host that documents one
+    # naming scheme still works with the other.
+    email_host: str = ""
+    email_port: int = 587
+    email_user: str = ""
+    email_password: str = ""
+    email_use_tls: bool = True
+    email_from: str = ""
+
+    # --- Telegram login ----------------------------------------------------
+    telegram_bot_token: str = ""
+    telegram_bot_username: str = ""
+
+    # --- Password / one-time code login ------------------------------------
+    password_min_length: int = 8
+    # A 6-digit code is valid for 10 minutes (requirement 1.2).
+    login_code_ttl_seconds: int = 600
+    # Wrong guesses allowed per code before it is burned.
+    login_code_max_attempts: int = 5
+
     @field_validator("secret_key")
     @classmethod
     def _validate_secret_key(cls, value: str) -> str:
@@ -195,6 +216,38 @@ class Settings(BaseSettings):
     @property
     def oauth_configured(self) -> bool:
         return bool(self.google_client_id and self.google_client_secret)
+
+    @property
+    def resolved_email_host(self) -> str:
+        """EMAIL_HOST, falling back to the older SMTP_HOST."""
+        return (self.email_host or self.smtp_host).strip()
+
+    @property
+    def resolved_email_port(self) -> int:
+        return int(self.email_port or self.smtp_port or 587)
+
+    @property
+    def resolved_email_user(self) -> str:
+        return (self.email_user or self.smtp_user).strip()
+
+    @property
+    def resolved_email_password(self) -> str:
+        return self.email_password or self.smtp_password
+
+    @property
+    def resolved_email_from(self) -> str:
+        """Sender address; falls back to the SMTP user, then support_email."""
+        return (
+            self.email_from or self.resolved_email_user or self.support_email
+        ).strip()
+
+    @property
+    def email_configured(self) -> bool:
+        return bool(self.resolved_email_host and self.resolved_email_from)
+
+    @property
+    def telegram_configured(self) -> bool:
+        return bool(self.telegram_bot_token)
 
 
 @lru_cache
