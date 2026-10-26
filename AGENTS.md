@@ -67,25 +67,32 @@ Hosting is **Render**, decided by the user. Key facts learned the hard way:
 - `BASE_URL` is derived from `RENDER_EXTERNAL_URL`; set it explicitly only for
   a custom domain. `DATABASE_URL` is injected from the managed database.
 
-## E-mail (Gmail SMTP)
+## E-mail (sign-in codes and support replies)
 
-Sign-in codes and support replies go out over SMTP (`app/services/mailer.py`).
+Sent from `app/services/mailer.py` over one of two transports.
 
-- **Unconfigured SMTP means no e-mail, not a silent log.** In production
+- **Render's FREE web services cannot open outbound SMTP connections at all —
+  ports 25, 465 and 587 are blocked by the platform.** Gmail SMTP therefore
+  *cannot* work on the free plan; it fails at connect time. This is the
+  documented cause of "codes never arrive" and it is not a code bug. Verified
+  against Render's own docs (`render.com/llms-full.txt`, "Free web services
+  can't send outbound network traffic on ports 25, 465, or 587").
+- **The free-plan transport is an HTTP API over port 443**: `EMAIL_API_PROVIDER`
+  (`brevo` or `resend`) plus `EMAIL_API_KEY`. Brevo allows 300/day free and
+  only needs one verified sender address.
+- SMTP remains for paid plans and local work; it is ignored when
+  `EMAIL_API_PROVIDER` is set.
+- **Unconfigured mail means no e-mail, not a silent log.** In production
   `_deliver` returns `False` and logs the recipient only; the code is never
   written to the deploy log. Development still logs the body so a developer can
-  read the code. `tests/test_mailer.py` guards both behaviours.
+  read the code. `tests/test_mailer.py` guards both.
 - **Never log the subject or body of a message.** `send_login_code` puts the
   code in the subject (`Код для входа: 123456`), so logging it leaks the code.
-- `settings.email_configured` requires host + sender **and**, when a username is
-  set, a password. A username without a password cannot authenticate, so it
-  counts as unconfigured and the UI says so.
+- `settings.email_configured` is true when an HTTP API is configured, or when
+  SMTP has host + sender and (if a username is set) a password.
 - The UI is honest about this: `/auth/login` hides the code button, and
   `/auth/code` explains the problem instead of claiming a message was sent
   (`_EMAIL_UNAVAILABLE` in `app/routes/login.py`).
-- Gmail needs an **App Password** (16 chars, requires 2-Step Verification), not
-  the account password. Port 587/STARTTLS. `render.yaml` already sets
-  `SMTP_HOST`/`SMTP_PORT`/`SMTP_USER`; only `SMTP_PASSWORD` is prompted for.
 
 ## Git
 

@@ -102,6 +102,13 @@ class Settings(BaseSettings):
     email_use_tls: bool = True
     email_from: str = ""
 
+    # --- Outbound e-mail over HTTP -----------------------------------------
+    # Render's free web services cannot open outbound SMTP connections at all
+    # (ports 25/465/587 are blocked), so on that plan an HTTP API is the only
+    # way to send mail.  Supported providers: "resend", "brevo".
+    email_api_provider: str = ""
+    email_api_key: str = ""
+
     # --- Telegram login ----------------------------------------------------
     telegram_bot_token: str = ""
     telegram_bot_username: str = ""
@@ -242,13 +249,21 @@ class Settings(BaseSettings):
         ).strip()
 
     @property
+    def email_api_configured(self) -> bool:
+        """True when an HTTP mail API is set up (the free-Render path)."""
+        return bool(self.email_api_provider and self.email_api_key)
+
+    @property
     def email_configured(self) -> bool:
         """True when a code can actually be delivered.
 
-        A username without a password cannot authenticate, so it counts as
-        unconfigured: the sign-in page then tells the visitor the truth instead
-        of failing at send time.
+        Either an HTTP API (works on Render's free plan, which blocks SMTP) or
+        SMTP with a password.  A username without a password cannot
+        authenticate, so it counts as unconfigured: the sign-in page then tells
+        the visitor the truth instead of failing at send time.
         """
+        if self.email_api_configured:
+            return True
         if not (self.resolved_email_host and self.resolved_email_from):
             return False
         if self.resolved_email_user and not self.resolved_email_password:

@@ -65,22 +65,27 @@ services:
       - key: ADMIN_EMAILS
         sync: false
 
-      # --- E-mail (Gmail over SMTP) ----------------------------------------
-      # Sign-in codes are only delivered when SMTP_HOST, SMTP_USER and
-      # SMTP_PASSWORD are all set.  Without them the code-login page says so
-      # instead of pretending to have sent a message.
-      #
-      # Gmail needs an App Password, not the account password: enable 2-Step
-      # Verification, then Google Account -> Security -> App passwords.
+      # --- E-mail -----------------------------------------------------------
+      # IMPORTANT: Render's FREE web services cannot open outbound SMTP
+      # connections at all — ports 25, 465 and 587 are blocked.  Gmail SMTP
+      # therefore cannot work on the free plan; use an HTTP mail API instead
+      # (it goes over 443).  Set EMAIL_API_PROVIDER and EMAIL_API_KEY below.
       - key: SUPPORT_EMAIL
         value: ethernallhatred@gmail.com
+      # "brevo" (300/day free, verify one sender address) or "resend".
+      - key: EMAIL_API_PROVIDER
+        sync: false
+      - key: EMAIL_API_KEY
+        sync: false
+      # --- SMTP (paid plans / self-hosting only) ----------------------------
+      # Ignored when EMAIL_API_PROVIDER is set.  Keep EMPTY on the free plan:
+      # the ports are blocked, so a configured SMTP host would fail at send
+      # time instead of showing the honest "not configured" notice.
       - key: SMTP_HOST
-        value: smtp.gmail.com
+        value: ""
       - key: SMTP_PORT
         value: "587"
-      # The sending Gmail address.  Defaults to SUPPORT_EMAIL, override to send
-      # from a different mailbox.
       - key: SMTP_USER
-        value: ethernallhatred@gmail.com
+        value: ""
       - key: SMTP_PASSWORD
         sync: false
