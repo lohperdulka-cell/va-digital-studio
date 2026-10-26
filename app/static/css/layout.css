@@ -63,7 +63,10 @@
   margin-left: 20px;
 }
 
-@media (min-width: 1024px) {
+/* The nav appears at exactly the width where the burger disappears.  A larger
+   gap would leave a band with neither — the header would show only the logo
+   and the profile button, which is what made the desktop header look empty. */
+@media (min-width: 1080px) {
   .header__nav { display: flex; }
 }
 
@@ -77,7 +80,7 @@
   transition: all var(--transition);
 }
 
-@media (min-width: 1024px) and (max-width: 1180px) {
+@media (min-width: 1080px) and (max-width: 1180px) {
   .header__link { padding: 9px 8px; font-size: 0.85rem; }
 }
 
@@ -198,7 +201,7 @@
   flex: 0 0 auto;
 }
 
-@media (min-width: 900px) {
+@media (min-width: 1080px) {
   .burger { display: none; }
 }
 

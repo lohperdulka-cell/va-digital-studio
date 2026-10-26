@@ -53,8 +53,7 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
     if not settings.oauth_configured:
         logger.warning(
             "GOOGLE_CLIENT_ID/GOOGLE_CLIENT_SECRET are unset — the Google "
-            "button is hidden. Email+password, e-mail code and Telegram "
-            "sign-in still work."
+            "button is hidden. Email+password and Telegram sign-in still work."
         )
     elif settings.base_url_is_local and settings.is_production:
         # The single most common misconfiguration: BASE_URL still points at
