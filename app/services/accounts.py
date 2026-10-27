@@ -8,7 +8,7 @@ from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.config import settings
+from app.config import settings, strip_invisible
 from app.logging_config import get_logger
 from app.models import User
 from app.security.passwords import hash_password, verify_password
@@ -109,7 +109,7 @@ def _apply_admin_policy(db: Session, user: User) -> None:
     has no administrator at all, so a later visitor can neither take the flag
     nor lose it.
     """
-    if user.email.lower() in settings.admin_email_list:
+    if normalize_email(user.email) in settings.admin_email_list:
         if not user.is_admin:
             logger.info("Granting admin via ADMIN_EMAILS to %s", user.email)
         user.is_admin = True
@@ -173,7 +173,13 @@ def find_by_login(db: Session, identifier: str) -> User | None:
 
 
 def normalize_email(email: str) -> str:
-    return (email or "").strip().lower()
+    """Lower-case, trim, and drop invisible characters from an address.
+
+    The comparison against ``ADMIN_EMAILS`` uses this on both sides, so a
+    non-breaking space pasted into the host's dashboard cannot make an address
+    that is really on the list look like a different one.
+    """
+    return strip_invisible((email or "").strip()).lower()
 
 
 def normalize_username(username: str) -> str:

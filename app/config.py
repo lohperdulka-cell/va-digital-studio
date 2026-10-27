@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 import secrets
 from functools import lru_cache
 from pathlib import Path
@@ -19,6 +20,22 @@ _INSECURE_SECRET_PREFIXES = ("change-me", "secret", "changeme")
 # driver suffix on either.
 _BARE_POSTGRES_SCHEMES = ("postgres://", "postgresql://")
 _POSTGRES_DRIVER = "postgresql+psycopg2://"
+
+# Characters a dashboard paste can smuggle in: BOM, zero-width space/non-joiner,
+# non-breaking space, and the narrow no-break space.  They are invisible in the
+# Render UI but break an equality check against the signed-in e-mail.
+_INVISIBLE_CHARS = re.compile("[\u200b\u200c\u200d\ufeff\u00a0\u202f]")
+
+
+def strip_invisible(value: str) -> str:
+    """Drop zero-width and non-breaking characters from a pasted setting.
+
+    A dashboard value is typed or pasted by hand, so it can carry a BOM, a
+    zero-width space, or a non-breaking space.  They are invisible in the host's
+    UI but make an equality check against a real address fail, which is why a
+    correct ``ADMIN_EMAILS`` could still leave the account unpromoted.
+    """
+    return _INVISIBLE_CHARS.sub("", value or "")
 
 
 class Settings(BaseSettings):
@@ -169,12 +186,23 @@ class Settings(BaseSettings):
 
     @property
     def admin_email_list(self) -> list[str]:
-        """ADMIN_EMAILS as a normalised list of lower-case addresses."""
-        return [
-            email.strip().lower()
-            for email in self.admin_emails.replace(";", ",").split(",")
-            if email.strip()
-        ]
+        """ADMIN_EMAILS as a normalised list of lower-case addresses.
+
+        The value is typed into a host's dashboard by hand, so it arrives with
+        whatever the operator's editor or the UI added: wrapping quotes, a
+        stray BOM, a non-breaking space pasted from a document, a zero-width
+        space.  Any of those made the comparison against the signed-in address
+        fail silently, so the account was never promoted.  Normalising here
+        means every caller — login, middleware, bootstrap — agrees on the
+        match without repeating the cleanup.
+        """
+        cleaned = strip_invisible(self.admin_emails).replace(";", ",")
+        addresses = []
+        for raw in cleaned.split(","):
+            address = raw.strip().strip("\"'").strip().lower()
+            if address:
+                addresses.append(address)
+        return addresses
 
     @property
     def normalized_database_url(self) -> str:

@@ -17,6 +17,7 @@ from app.database import Base, SessionLocal, engine
 from app.logging_config import get_logger, setup_logging
 from app.models import Case, News, NewsLike, Review, Service, User
 from app.models.enums import ServiceCategory
+from app.services.accounts import normalize_email
 
 logger = get_logger(__name__)
 
@@ -387,12 +388,18 @@ def promote_admins(db: Session) -> int:
     """
     wanted = set(settings.admin_email_list)
 
+    # Logged because this is the first thing to check when a listed address is
+    # still not an administrator on a host whose dashboard we cannot inspect.
+    logger.info("ADMIN_EMAILS parsed to %s", sorted(wanted) or "<empty>")
+
     if not wanted:
         return _promote_owner_account(db)
 
     changed = 0
     for user in db.scalars(select(User)):
-        should_be_admin = user.email in wanted
+        # Compare on the normalised address: a user row can carry a stray
+        # non-breaking space too, and a plain ``in`` would then miss it.
+        should_be_admin = normalize_email(user.email) in wanted
         if user.is_admin != should_be_admin:
             user.is_admin = should_be_admin
             changed += 1

@@ -24,7 +24,7 @@ production. Russian-language UI, no SPA — progressive-enhancement JS only.
 ## Commands
 
 ```bash
-python -m pytest -q                  # full suite (~338 tests)
+python -m pytest -q                  # full suite (~363 tests)
 python -m alembic revision --autogenerate -m "..."   # new migration
 python -m alembic upgrade head       # apply migrations
 python -m app.seed --bootstrap       # seed empty tables + promote admins

@@ -143,6 +143,17 @@ def test_bootstrap_promotes_an_existing_user(db, make_user):
     assert user.is_admin is True
 
 
+def test_bootstrap_promotes_when_admin_emails_was_pasted_dirty(db, make_user, monkeypatch):
+    """A quoted or non-breaking-space value must not silently skip promotion."""
+    monkeypatch.setattr(settings, "admin_emails", ' "boss@example.com"\u00a0 ')
+    user = make_user("boss@example.com", is_admin=False)
+
+    bootstrap()
+
+    db.refresh(user)
+    assert user.is_admin is True
+
+
 def test_bootstrap_leaves_other_users_alone(db, make_user):
     user = make_user("someone@example.com", is_admin=False)
 

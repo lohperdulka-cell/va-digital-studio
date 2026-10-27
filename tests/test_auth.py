@@ -9,7 +9,7 @@ import pytest
 from fastapi import Depends, FastAPI
 from fastapi.testclient import TestClient
 
-from app.config import settings
+from app.config import Settings, settings, strip_invisible
 from app.main import register_error_handlers
 from app.middleware import CurrentUserMiddleware
 from app.security.sessions import (
@@ -207,6 +207,70 @@ def test_admin_emails_promotes_on_login(db):
         },
     )
     assert plain.is_admin is False
+
+
+def _profile(email: str) -> dict[str, str | None]:
+    return {
+        "google_id": f"google-{email}",
+        "email": email,
+        "name": "Тест",
+        "avatar_url": None,
+    }
+
+
+# A dashboard value is pasted by hand, so it arrives with whatever the editor
+# or the UI added.  Each of these used to leave the account unpromoted while
+# the operator saw their address on the list.
+DIRTY_ADMIN_VALUES = [
+    pytest.param("boss@example.com", id="clean"),
+    pytest.param('"boss@example.com"', id="double-quoted"),
+    pytest.param("'boss@example.com'", id="single-quoted"),
+    pytest.param("  boss@example.com  ", id="surrounding-spaces"),
+    pytest.param("boss@example.com\n", id="trailing-newline"),
+    pytest.param("BOSS@example.com", id="upper-case"),
+    pytest.param("boss@example.com\u200b", id="zero-width-space"),
+    pytest.param("boss@example.com\u00a0", id="non-breaking-space"),
+    pytest.param("\ufeffboss@example.com", id="byte-order-mark"),
+    pytest.param("other@example.com; boss@example.com", id="semicolon-list"),
+    pytest.param('"other@example.com", "boss@example.com"', id="quoted-list"),
+]
+
+
+@pytest.mark.parametrize("raw", DIRTY_ADMIN_VALUES)
+def test_admin_emails_survives_a_pasted_value(raw):
+    """Every realistic paste shape must still yield the bare address."""
+    parsed = Settings(_env_file=None, admin_emails=raw).admin_email_list
+
+    assert "boss@example.com" in parsed
+    # Nothing may keep a quote, a space, or an invisible character.
+    assert all(address == address.strip().strip("\"'").lower() for address in parsed)
+    assert all(strip_invisible(address) == address for address in parsed)
+
+
+@pytest.mark.parametrize("raw", DIRTY_ADMIN_VALUES)
+def test_admin_login_is_granted_for_a_pasted_admin_emails(db, monkeypatch, raw):
+    """The whole point of the normalisation: the login must set is_admin."""
+    monkeypatch.setattr(settings, "admin_emails", raw)
+
+    user, created = upsert_user(db, _profile("boss@example.com"))
+
+    assert created is True
+    assert user.is_admin is True
+
+
+def test_blank_admin_emails_still_falls_back_to_the_owner(db, monkeypatch):
+    """An all-separators value must count as empty, not as a list of blanks."""
+    monkeypatch.setattr(settings, "admin_emails", " , ; , ")
+
+    assert settings.admin_email_list == []
+
+    user, _ = upsert_user(db, _profile("first@example.com"))
+    assert user.is_admin is True
+
+
+def test_strip_invisible_removes_only_the_invisible_characters():
+    assert strip_invisible("a\u200bb\ufeffc\u00a0d\u202fe") == "abcde"
+    assert strip_invisible("keep me") == "keep me"
 
 
 # --- Middleware and dependencies ------------------------------------------
