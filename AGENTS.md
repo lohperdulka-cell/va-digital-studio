@@ -148,6 +148,16 @@ Sent from `app/services/mailer.py` over one of two transports.
   resolution order, the plural rule, and that public and dashboard pages render
   in both languages with no leftover Russian.
 
+## Orders
+
+- `app/services/orders.py` owns the status grouping. `ACTIVE_STATUSES` and
+  `CLOSED_STATUSES` must stay a partition of `OrderStatus`: the client's
+  "Мои заказы" tabs and the dashboard counters both rely on the two lists
+  adding up to the total. `SUPPORT` belongs to the active side — its chat was
+  reopened, so it is not finished.
+- `/profile/orders` takes `?scope=all|active|closed`; anything else falls back
+  to `all` so a stray query string still renders.
+
 ## Git
 
 - Default branch: `main`. Feature work goes on a branch and is merged back.
