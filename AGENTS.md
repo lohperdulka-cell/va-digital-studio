@@ -158,6 +158,12 @@ Sent from `app/services/mailer.py` over one of two transports.
 - `/profile/orders` takes `?scope=all|active|closed`; anything else falls back
   to `all` so a stray query string still renders.
 
+## Deployment status
+
+- The site **is already deployed on Render** and has been running. Do not
+  revisit hosting or payment-method topics; the card check is closed and is
+  not part of any task.
+
 ## Git
 
 - Default branch: `main`. Feature work goes on a branch and is merged back.
