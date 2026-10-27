@@ -41,6 +41,52 @@
     window.setTimeout(() => dismissFlash(flash), 6000);
   });
 
+  // --- Scroll reveal ------------------------------------------------------
+
+  /**
+   * Fade sections in as they scroll into view.
+   *
+   * The `.reveal` class is applied here rather than in the template, so a
+   * visitor without JavaScript (or with reduced motion, or an older browser
+   * without IntersectionObserver) sees a normal, fully visible page.
+   */
+  const prefersReducedMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)"
+  ).matches;
+
+  if (!prefersReducedMotion && "IntersectionObserver" in window) {
+    const targets = document.querySelectorAll(
+      ".section-head, .card, .grid--cards > *, .features > *, .faq-item, " +
+        ".stat-card, .profile-header, .cta, .hero__visual"
+    );
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add("is-visible");
+          observer.unobserve(entry.target);
+        });
+      },
+      { rootMargin: "0px 0px -8% 0px", threshold: 0.05 }
+    );
+
+    // Only animate what starts below the fold; anything already on screen
+    // should simply be there, without a visible entrance.
+    const fold = window.innerHeight;
+    let index = 0;
+    targets.forEach((element) => {
+      if (element.getBoundingClientRect().top < fold * 0.9) return;
+      element.classList.add("reveal");
+      // A small stagger inside a row, capped so nothing feels slow.
+      element.style.setProperty(
+        "--reveal-delay",
+        `${Math.min(index++ % 4, 3) * 60}ms`
+      );
+      observer.observe(element);
+    });
+  }
+
   // --- Header dropdown ----------------------------------------------------
 
   function closeAllDropdowns(except) {

@@ -77,14 +77,21 @@
   font-size: 0.9rem;
   font-weight: 500;
   white-space: nowrap;
-  transition: all var(--transition);
+  transition: color var(--transition), background var(--transition),
+    transform var(--transition);
 }
 
 @media (min-width: 1080px) and (max-width: 1180px) {
   .header__link { padding: 9px 8px; font-size: 0.85rem; }
 }
 
-.header__link:hover { color: var(--text); background: var(--surface-2); }
+.header__link:hover {
+  color: var(--text);
+  background: var(--surface-2);
+  transform: translateY(-1px);
+}
+
+.header__link:active { transform: translateY(0); }
 
 .header__link.is-active { color: var(--text); background: var(--accent-soft); }
 
