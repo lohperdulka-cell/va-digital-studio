@@ -103,7 +103,11 @@ class Settings(BaseSettings):
     rate_limit_window_seconds: int = 60
 
     # --- Support -----------------------------------------------------------
-    support_email: str = "ethernallhatred@gmail.com"
+    support_email: str = "va-digital-studio@yandex.ru"
+    # Public Telegram accounts shown in the footer, comma-separated.  Kept in
+    # settings rather than hard-coded in the template so the list can change
+    # without a code edit.
+    support_telegram: str = "@goldenhate,@straitwork"
     smtp_host: str = ""
     smtp_port: int = 587
     smtp_user: str = ""
@@ -203,6 +207,21 @@ class Settings(BaseSettings):
             if address:
                 addresses.append(address)
         return addresses
+
+    @property
+    def support_telegram_accounts(self) -> list[str]:
+        """Public Telegram handles as a normalised list (``@name`` form).
+
+        Operators paste these by hand, so the same cleanup as ADMIN_EMAILS
+        applies; a bare ``name`` is normalised to ``@name`` so the link and the
+        label always agree.
+        """
+        handles = []
+        for raw in strip_invisible(self.support_telegram).replace(";", ",").split(","):
+            handle = raw.strip().strip("\"'").lstrip("@").strip()
+            if handle:
+                handles.append(f"@{handle}")
+        return handles
 
     @property
     def normalized_database_url(self) -> str:

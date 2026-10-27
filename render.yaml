@@ -74,7 +74,7 @@ services:
       # therefore cannot work on the free plan; use an HTTP mail API instead
       # (it goes over 443).  Set EMAIL_API_PROVIDER and EMAIL_API_KEY below.
       - key: SUPPORT_EMAIL
-        value: ethernallhatred@gmail.com
+        value: va-digital-studio@yandex.ru
       # "brevo" (300/day free, verify one sender address) or "resend".
       - key: EMAIL_API_PROVIDER
         sync: false

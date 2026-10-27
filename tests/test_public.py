@@ -550,3 +550,38 @@ def test_rich_text_sanitiser_blocks_javascript_urls():
 )
 def test_slug_cleaner(raw, expected):
     assert clean_slug(raw) == expected
+
+
+# --- Footer contacts -------------------------------------------------------
+
+
+def test_footer_shows_support_email_and_both_telegram_accounts(client):
+    """Requirement: support e-mail plus @goldenhate and @straitwork."""
+    html = client.get("/").text
+
+    assert "va-digital-studio@yandex.ru" in html
+    assert "@goldenhate" in html
+    assert "@straitwork" in html
+    # The link target must drop the "@" or Telegram shows a 404.
+    assert "t.me/goldenhate" in html
+    assert "t.me/straitwork" in html
+    assert "t.me/@straitwork" not in html
+
+
+@pytest.mark.parametrize(
+    ("raw", "expected"),
+    [
+        ("@goldenhate,@straitwork", ["@goldenhate", "@straitwork"]),
+        ("goldenhate, straitwork", ["@goldenhate", "@straitwork"]),
+        ("@goldenhate; @straitwork", ["@goldenhate", "@straitwork"]),
+        ('"@goldenhate" , \u00a0straitwork ', ["@goldenhate", "@straitwork"]),
+        ("", []),
+        (" , ", []),
+    ],
+)
+def test_support_telegram_accounts_are_normalised(raw, expected):
+    from app.config import Settings
+
+    assert Settings(_env_file=None, support_telegram=raw).support_telegram_accounts == (
+        expected
+    )

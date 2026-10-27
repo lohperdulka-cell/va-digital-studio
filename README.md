@@ -389,7 +389,7 @@ va_digital_studio/
 
 **Brevo** — бесплатно 300 писем в сутки. Достаточно подтвердить один адрес
 отправителя (письмо с кодом уходит с вашего адреса, например
-`ethernallhatred@gmail.com`):
+`va-digital-studio@yandex.ru`):
 
 1. Регистрация: <https://www.brevo.com>.
 2. **Senders, Domains & Dedicated IPs** → **Senders** → добавьте свой адрес
