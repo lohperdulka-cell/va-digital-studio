@@ -23,6 +23,12 @@ from app.security.sanitize import clean_plain_text
 
 logger = get_logger(__name__)
 
+#: Name shown to a client in place of an individual administrator.  A studio
+#: identity is friendlier than an arbitrary staff member's name, and it stays
+#: stable when the team changes.
+SUPPORT_NAME = "Поддержка VA Digital"
+SUPPORT_INITIALS = "VA"
+
 
 # --- Persistence -----------------------------------------------------------
 

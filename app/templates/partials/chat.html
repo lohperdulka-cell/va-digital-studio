@@ -1,0 +1,77 @@
+{# Order chat, styled after Telegram but in the studio's own palette.
+
+   The header carries the whole context: who is on the other side, whether
+   they are typing, and the order's number, status and price.  Individual
+   messages therefore carry no "from whom" caption — the bubble side already
+   says it.
+
+   Expects: order, ws_path, peer_name, peer_initials and chat_staff (True on
+   the dashboard and for an administrator viewing someone else's order). #}
+
+{% set readonly = order.chat_closed and not chat_staff %}
+
+<div class="chat" data-chat data-ws-path="{{ ws_path }}"
+     data-chat-peer="{{ peer_name }}"
+     data-chat-open="{{ 'false' if readonly else 'true' }}">
+
+  <header class="chat__header">
+    <span class="chat__avatar" aria-hidden="true">{{ peer_initials }}</span>
+    <div class="chat__peer">
+      <strong class="chat__peer-name">{{ peer_name }}</strong>
+      <span class="chat__peer-sub" data-chat-typing aria-live="polite">
+        {% if readonly %}{{ t('Чат закрыт') }}{% else %}{{ t('в сети') }}{% endif %}
+      </span>
+    </div>
+    <span class="spacer"></span>
+    <span class="chat__status">
+      <span class="chat__dot" data-chat-status></span>
+      <span class="sr-only" data-chat-status-text>{{ t('Состояние соединения') }}</span>
+    </span>
+  </header>
+
+  {# Info block: the order number is what an administrator searches by. #}
+  <div class="chat__info">
+    <span class="chat__info-item">
+      <span class="chat__info-label">{{ t('Заказ') }}</span>
+      <span class="chat__info-value mono">#{{ order.id }}</span>
+    </span>
+    <span class="chat__info-item">
+      <span class="chat__info-label">{{ t('Статус') }}</span>
+      <span class="badge {{ order.status.css_class }}">{{ order.status.label }}</span>
+    </span>
+    <span class="chat__info-item">
+      <span class="chat__info-label">{{ t('Цена') }}</span>
+      <span class="chat__info-value">{{ order.price_label }}</span>
+    </span>
+  </div>
+
+  <div class="chat__log" data-chat-log role="log" aria-live="polite"
+       aria-label="{{ t('Сообщения') }} {{ t('чата') }}">
+    <div class="chat__msg chat__msg--system">
+      <div class="chat__bubble">{{ t('Загружаем историю сообщений…') }}</div>
+    </div>
+  </div>
+
+  <div class="chat__note" data-chat-note hidden></div>
+
+  {% if readonly %}
+    {# A finished order keeps its history but takes no new messages. #}
+    <div class="chat__closed">
+      <p class="chat__closed-text">
+        {{ t('Заказ завершён — чат закрыт. Если нужна помощь, создайте обращение: оно попадёт в поддержку вместе с номером заказа.') }}
+      </p>
+      <a class="btn btn--primary btn--block"
+         href="/support?order={{ order.id }}&subject={{ (t('Вопрос по заказу') ~ ' #' ~ order.id) | urlencode }}">
+        💬 {{ t('Обратиться в поддержку') }}
+      </a>
+    </div>
+  {% else %}
+    <form class="chat__form" data-chat-form autocomplete="off">
+      <label class="sr-only" for="chat-input-{{ order.id }}">{{ t('Сообщение') }}</label>
+      <textarea class="chat__input" id="chat-input-{{ order.id }}" name="text" rows="1"
+                maxlength="2000" placeholder="{{ t('Напишите сообщение…') }}"
+                data-chat-input required></textarea>
+      <button type="submit" class="btn btn--primary">{{ t('Отправить') }}</button>
+    </form>
+  {% endif %}
+</div>

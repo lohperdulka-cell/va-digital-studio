@@ -29,47 +29,10 @@
         {{ t('Сообщения видны клиенту мгновенно.') }}
       </p>
 
-      <section class="chat" data-chat data-ws-path="{{ ws_path }}">
-        <div class="chat__header">
-          <strong>{{ t('Чат с клиентом') }}</strong>
-          <span class="spacer"></span>
-          <span class="chat__status">
-            <span class="chat__dot" data-chat-status></span>
-          </span>
-        </div>
-
-        <div class="chat__log" data-chat-log role="log" aria-live="polite"
-             aria-label="{{ t('История сообщений') }}">
-          {% for message in messages %}
-            {% if message.kind.value == 'system' %}
-              <div class="chat__msg chat__msg--system">
-                <div class="chat__bubble">{{ message.text }}</div>
-                <div class="chat__meta">{{ message.created_at | time_short }}</div>
-              </div>
-            {% else %}
-              <div class="chat__msg {% if message.from_admin %}chat__msg--mine{% else %}chat__msg--theirs{% endif %}">
-                <div class="chat__bubble">{{ message.text }}</div>
-                <div class="chat__meta">
-                  {{ message.sender_name }} · {{ message.created_at | time_short }}
-                </div>
-              </div>
-            {% endif %}
-          {% endfor %}
-        </div>
-
-        <div class="chat__typing" data-chat-typing aria-live="polite"></div>
-
-        <form class="chat__form" data-chat-form autocomplete="off">
-          <label class="sr-only" for="admin-chat-input">{{ t('Сообщение клиенту') }}</label>
-          <textarea class="chat__input" id="admin-chat-input" name="text" rows="1"
-                    maxlength="2000" placeholder="{{ t('Ответьте клиенту…') }}"
-                    data-chat-input required></textarea>
-          <button class="btn btn--primary" type="submit">{{ t('Отправить') }}</button>
-        </form>
-      </section>
-      <p class="tiny dim" style="margin:12px 0 0">
-        {{ t('Сообщения сохраняются в истории заказа. Не отправляйте персональные данные.') }}
-      </p>
+      {% set peer_name = order.user.display_name if order.user else t('Клиент') %}
+      {% set peer_initials = order.user.initials if order.user else '?' %}
+      {% set chat_staff = true %}
+      {% include "partials/chat.html" %}
     </div>
   </div>
 
@@ -149,11 +112,15 @@
     if (!root || !window.VAChat) return;
     window.VAChat({
       wsPath: root.dataset.wsPath,
+      peerName: root.dataset.chatPeer,
+      closed: root.dataset.chatOpen !== "true",
       logSelector: "[data-chat-log]",
       formSelector: "[data-chat-form]",
       inputSelector: "[data-chat-input]",
       statusSelector: "[data-chat-status]",
-      typingSelector: "[data-chat-typing]"
+      statusTextSelector: "[data-chat-status-text]",
+      typingSelector: "[data-chat-typing]",
+      noteSelector: "[data-chat-note]"
     });
   });
 </script>

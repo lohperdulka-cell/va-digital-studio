@@ -73,8 +73,12 @@ def test_owner_can_open_chat(client, login_as, order):
     login_as(order.user)
     response = client.get(f"/chat/{order.id}")
     assert response.status_code == 200
-    assert "Чат с менеджером" in response.text
+    # The header names the studio, not an individual member of staff.
+    assert "Поддержка VA Digital" in response.text
     assert f'data-ws-path="/ws/chat/{order.id}"' in response.text
+    # The info strip carries the order number, its status and the price.
+    assert f'#{order.id}' in response.text
+    assert "Цена" in response.text
 
 
 def test_another_user_is_forbidden(client, login_as, make_user, order):
@@ -88,7 +92,8 @@ def test_admin_can_open_any_chat(client, login_as, make_user, order):
     login_as(make_user("boss@example.com", is_admin=True))
     response = client.get(f"/chat/{order.id}")
     assert response.status_code == 200
-    assert "Чат с клиентом" in response.text
+    # Staff see the client's own name in the header.
+    assert order.user.display_name in response.text
 
 
 def test_missing_order_returns_404(client, login_as, order):
@@ -314,4 +319,48 @@ def test_cancelled_order_chat_is_closed(client, login_as, db, order):
         socket.send_json({"type": "message", "text": "ещё вопрос"})
         payload = socket.receive_json()
         assert payload["type"] == "error"
-        assert "отменён" in payload["detail"]
+        assert "закрыт" in payload["detail"]
+
+
+def test_finished_order_chat_is_read_only_for_the_client(
+    client, login_as, db, order
+):
+    """A completed order shows a support button instead of the input."""
+    order.status = OrderStatus.DONE
+    db.commit()
+
+    login_as(order.user)
+    response = client.get(f"/chat/{order.id}")
+    assert response.status_code == 200
+    assert "Обратиться в поддержку" in response.text
+    # The form itself is gone; the selector string survives only inside the
+    # script that wires the client up.
+    assert 'id="chat-input-' not in response.text
+    assert "chat__closed" in response.text
+
+
+def test_finished_order_chat_still_accepts_staff_messages(
+    client, login_as, make_user, db, order
+):
+    """Staff keep writing after completion — that is how support continues."""
+    order.status = OrderStatus.DONE
+    db.commit()
+
+    login_as(make_user("boss@example.com", is_admin=True))
+    with client.websocket_connect(f"/ws/chat/{order.id}") as socket:
+        socket.receive_json()
+        socket.send_json({"type": "message", "text": "Мы на связи"})
+        payload = socket.receive_json()
+        assert payload["type"] == "message"
+        assert payload["message"]["text"] == "Мы на связи"
+
+
+def test_completed_order_shows_a_support_link_with_the_order_number(
+    client, login_as, db, order
+):
+    order.status = OrderStatus.DONE
+    db.commit()
+
+    login_as(order.user)
+    response = client.get(f"/chat/{order.id}")
+    assert f"/support?order={order.id}" in response.text

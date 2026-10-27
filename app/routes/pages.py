@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Form, Request
+from fastapi import APIRouter, Depends, Form, Query, Request
 from fastapi.responses import RedirectResponse
 from pydantic import ValidationError
 
@@ -13,6 +13,7 @@ from app.security.csrf import require_csrf
 from app.security.deps import DbSession, OptionalUser
 from app.services import catalog as catalog_service
 from app.services import newsfeed as news_service
+from app.services import orders as order_service
 from app.services import portfolio as portfolio_service
 from app.services import reviews as review_service
 from app.services import support as support_service
@@ -162,7 +163,17 @@ def support_page(
     request: Request,
     db: DbSession,
     user: OptionalUser = None,
+    order: str = Query(default=""),
 ):
+    # A finished order's chat links here with ?order=<id>; the number is shown
+    # in the form so the visitor can see which job the enquiry is about.
+    order_id: int | None = None
+    if user is not None and order.strip().isdigit():
+        # Only accept the number when the signed-in visitor actually owns it.
+        candidate = order_service.get_order(db, int(order.strip()))
+        if candidate is not None and candidate.user_id == user.id:
+            order_id = candidate.id
+
     return render(
         request,
         "support.html",
@@ -172,6 +183,7 @@ def support_page(
                 "name": user.display_name if user else "",
             },
             "errors": [],
+            "order_id": order_id,
             "my_tickets": support_service.list_for_user(db, user.id) if user else [],
         },
     )
@@ -186,8 +198,15 @@ def support_submit(
     email: str = Form(""),
     subject: str = Form(""),
     message: str = Form(""),
+    order_id: str = Form(""),
 ):
     """Ticket form used by the footer modal and the /support page."""
+    # A hidden field carries the order number when the enquiry starts from a
+    # finished order's chat.  Anything unparsable is treated as "no order".
+    linked_order: int | None = None
+    if order_id.strip().isdigit():
+        linked_order = int(order_id.strip())
+
     try:
         payload = SupportTicketForm(
             subject=subject,
@@ -216,6 +235,7 @@ def support_submit(
         email=str(payload.email or ""),
         name=payload.name,
         user=user,
+        order_id=linked_order,
     )
     flash(
         request,

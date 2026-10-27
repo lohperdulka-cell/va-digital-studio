@@ -321,8 +321,17 @@
     const form = document.querySelector(options.formSelector);
     const input = document.querySelector(options.inputSelector);
     const statusDot = document.querySelector(options.statusSelector);
+    const statusText = document.querySelector(options.statusTextSelector);
     const typingLabel = document.querySelector(options.typingSelector);
-    if (!log || !form) return null;
+    const note = options.noteSelector
+      ? document.querySelector(options.noteSelector)
+      : null;
+    if (!log) return null;
+
+    // The chat is read-only once the order is finished; the page replaces the
+    // form with a support button, so there is nothing to send.
+    const closed = Boolean(options.closed);
+    const peerName = options.peerName || "Поддержка";
 
     let socket = null;
     let reconnectDelay = 1000;
@@ -330,6 +339,9 @@
     let closedByUser = false;
     let typingTimer = null;
     let lastTypingSent = 0;
+    // The header shows "печатает…" in place of the peer's status line, so the
+    // resting text has to be remembered to restore it.
+    const restingSub = typingLabel ? typingLabel.textContent.trim() : "";
 
     function atBottom() {
       return log.scrollHeight - log.scrollTop - log.clientHeight < 80;
@@ -340,9 +352,19 @@
     }
 
     function setStatus(online) {
-      if (!statusDot) return;
-      statusDot.classList.toggle("is-online", online);
-      statusDot.textContent = online ? "на связи" : "нет соединения";
+      if (statusDot) statusDot.classList.toggle("is-online", online);
+      if (statusText) statusText.textContent = online ? "на связи" : "нет соединения";
+      // Only take the header line over while the chat is open: a closed order
+      // keeps its "Чат закрыт" label.
+      if (typingLabel && !closed) {
+        typingLabel.textContent = online ? restingSub : "нет соединения";
+      }
+    }
+
+    function showNote(text) {
+      if (!note) return;
+      note.textContent = text || "";
+      note.hidden = !text;
     }
 
     function formatTime(iso) {
@@ -367,13 +389,17 @@
       bubble.className = "chat__bubble";
       bubble.textContent = message.text;
 
-      const meta = document.createElement("div");
-      meta.className = "chat__meta";
-      const author = message.is_mine ? "Вы" : message.sender_name || "Менеджер";
-      meta.textContent =
-        message.kind === "system" ? formatTime(message.created_at) : `${author} · ${formatTime(message.created_at)}`;
+      wrapper.append(bubble);
 
-      wrapper.append(bubble, meta);
+      // The header already names the speaker, so a caption is only useful for
+      // a system notice, where the time alone is enough context.
+      if (message.kind === "system") {
+        const meta = document.createElement("div");
+        meta.className = "chat__meta";
+        meta.textContent = formatTime(message.created_at);
+        wrapper.append(meta);
+      }
+
       if (prepend) log.prepend(wrapper);
       else log.append(wrapper);
     }
@@ -398,6 +424,7 @@
       socket.addEventListener("open", () => {
         reconnectDelay = 1000;
         setStatus(true);
+        showNote("");
       });
 
       socket.addEventListener("message", (event) => {
@@ -414,13 +441,15 @@
           const stick = atBottom();
           appendMessage(payload.message);
           if (stick) scrollToBottom();
+          if (typingLabel && !closed) typingLabel.textContent = restingSub;
         } else if (payload.type === "typing") {
-          if (!typingLabel) return;
+          if (!typingLabel || closed) return;
           typingLabel.textContent = payload.is_typing
-            ? `${payload.sender_name || "Собеседник"} печатает…`
-            : "";
+            ? `${payload.sender_name || peerName} печатает…`
+            : restingSub;
         } else if (payload.type === "error") {
-          if (typingLabel) typingLabel.textContent = payload.detail || "";
+          showNote(payload.detail || "");
+          if (typingLabel && !closed) typingLabel.textContent = restingSub;
         }
       });
 
@@ -430,7 +459,7 @@
 
         // Terminal conditions: retrying would only repeat the rejection.
         if (event.code === 4401) {
-          if (typingLabel) typingLabel.textContent = "Сессия истекла — войдите заново";
+          showNote("Сессия истекла — войдите заново");
           window.setTimeout(() => {
             window.location.href = `/auth/login?next=${encodeURIComponent(
               window.location.pathname
@@ -439,7 +468,7 @@
           return;
         }
         if (event.code === 4403 || event.code === 4404) {
-          if (typingLabel) typingLabel.textContent = "Чат недоступен";
+          showNote("Чат недоступен");
           return;
         }
 
@@ -450,7 +479,7 @@
       socket.addEventListener("error", () => setStatus(false));
     }
 
-    form.addEventListener("submit", (event) => {
+    form?.addEventListener("submit", (event) => {
       event.preventDefault();
       const text = (input?.value || "").trim();
       if (!text || !socket || socket.readyState !== WebSocket.OPEN) return;
@@ -458,7 +487,7 @@
       socket.send(JSON.stringify({ type: "message", text }));
       input.value = "";
       if (input) input.style.height = "auto";
-      if (typingLabel) typingLabel.textContent = "";
+      if (typingLabel && !closed) typingLabel.textContent = restingSub;
       lastTypingSent = 0;
     });
 

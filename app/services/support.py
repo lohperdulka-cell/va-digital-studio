@@ -6,8 +6,8 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session, selectinload
 
 from app.logging_config import get_logger
-from app.models import SupportMessage, SupportTicket, User
-from app.models.enums import TicketStatus
+from app.models import Order, SupportMessage, SupportTicket, User
+from app.models.enums import OrderStatus, TicketStatus
 from app.security.sanitize import clean_email, clean_plain_text
 
 logger = get_logger(__name__)
@@ -21,10 +21,24 @@ def create_ticket(
     email: str,
     name: str = "",
     user: User | None = None,
+    order_id: int | None = None,
 ) -> SupportTicket:
-    """Create a ticket plus its first message."""
+    """Create a ticket plus its first message.
+
+    ``order_id`` links the enquiry to an order when the visitor supplied one.
+    Only an order the visitor actually owns is accepted, so a guessed number
+    cannot attach a ticket to somebody else's order.
+    """
+    if order_id is not None and user is not None:
+        owned = db.scalar(
+            select(Order.id).where(Order.id == order_id, Order.user_id == user.id)
+        )
+        if owned is None:
+            order_id = None
+
     ticket = SupportTicket(
         user_id=user.id if user else None,
+        order_id=order_id,
         email=clean_email(user.email if user and not email else email),
         name=clean_plain_text(name, max_length=200)
         or (user.display_name if user else ""),
@@ -46,10 +60,11 @@ def create_ticket(
     db.commit()
     db.refresh(ticket)
     logger.info(
-        "Support ticket created: id=%s email=%s user_id=%s",
+        "Support ticket created: id=%s email=%s user_id=%s order_id=%s",
         ticket.id,
         ticket.email,
         user.id if user else None,
+        order_id,
     )
     return ticket
 
@@ -58,7 +73,11 @@ def get_ticket(db: Session, ticket_id: int) -> SupportTicket | None:
     return db.scalar(
         select(SupportTicket)
         .where(SupportTicket.id == ticket_id)
-        .options(selectinload(SupportTicket.thread), selectinload(SupportTicket.user))
+        .options(
+            selectinload(SupportTicket.thread),
+            selectinload(SupportTicket.user),
+            selectinload(SupportTicket.order),
+        )
     )
 
 
@@ -134,3 +153,34 @@ def reopen(db: Session, ticket: SupportTicket) -> SupportTicket:
     db.refresh(ticket)
     logger.info("Support ticket reopened: id=%s", ticket.id)
     return ticket
+
+
+def reopen_order_for_support(
+    db: Session, *, ticket: SupportTicket, price: str | None = None
+) -> Order | None:
+    """Move a linked, finished order back to "Поддержка" and reopen its chat.
+
+    Support work is quoted separately from the original job, so the price is
+    set to 0 by default — the order stays billable, just at no extra charge —
+    and staff may override it when the follow-up is substantial.
+    """
+    from app.services import orders as order_service
+
+    if ticket.order_id is None:
+        return None
+
+    order = db.get(Order, ticket.order_id)
+    if order is None:
+        return None
+
+    raw = (price or "").strip() or "0"
+    try:
+        order_service.set_price(db, order, raw)
+    except ValueError:
+        logger.warning("Support price rejected: order_id=%s value=%r", order.id, price)
+        raise
+
+    order_service.update_status(db, order, OrderStatus.SUPPORT)
+    db.refresh(order)
+    logger.info("Order reopened for support: order_id=%s ticket_id=%s", order.id, ticket.id)
+    return order

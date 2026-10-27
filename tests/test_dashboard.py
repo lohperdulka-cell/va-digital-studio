@@ -538,3 +538,101 @@ def test_admin_reply_does_not_count_as_unread_for_admin(client, db, admin, login
     login_as(admin)
     body = client.get("/dashboard/chats").text
     assert 'class="dash__count"' not in body
+
+
+# --- Support ↔ order link --------------------------------------------------
+
+
+@pytest.fixture
+def order_ticket(db, order) -> SupportTicket:
+    """A ticket that arrived from a finished order's chat."""
+    item = SupportTicket(
+        user_id=order.user_id,
+        order_id=order.id,
+        email=order.user.email,
+        name=order.user.name,
+        subject=f"Вопрос по заказу #{order.id}",
+        message="После сдачи нашлась ошибка.",
+    )
+    db.add(item)
+    db.commit()
+    db.refresh(item)
+    return item
+
+
+def test_support_detail_shows_the_linked_order(
+    client, admin, login_as, order_ticket
+):
+    login_as(admin)
+    body = client.get(f"/dashboard/support/{order_ticket.id}").text
+    assert f"/dashboard/orders/{order_ticket.order_id}" in body
+    assert "Взять в поддержку" in body
+
+
+def test_to_support_moves_the_order_and_reopens_its_chat(
+    client, db, admin, login_as, order, order_ticket
+):
+    order.status = OrderStatus.DONE
+    db.commit()
+
+    login_as(admin)
+    client.post(
+        f"/dashboard/support/{order_ticket.id}/to-support",
+        data={"price": "0", "csrf_token": _csrf(client)},
+        follow_redirects=False,
+    )
+    db.refresh(order)
+    assert order.status is OrderStatus.SUPPORT
+    # Support work defaults to no extra charge, and the chat accepts messages
+    # again because the order is no longer terminal.
+    assert order.price_final == Decimal("0.00")
+    assert order.chat_closed is False
+
+
+def test_to_support_accepts_a_custom_price(
+    client, db, admin, login_as, order, order_ticket
+):
+    order.status = OrderStatus.DONE
+    db.commit()
+
+    login_as(admin)
+    client.post(
+        f"/dashboard/support/{order_ticket.id}/to-support",
+        data={"price": "5 000", "csrf_token": _csrf(client)},
+        follow_redirects=False,
+    )
+    db.refresh(order)
+    assert order.price_final == Decimal("5000.00")
+    assert order.price_label == "Точная цена: 5 000 ₽"
+
+
+def test_to_support_rejects_a_bad_price(
+    client, db, admin, login_as, order, order_ticket
+):
+    order.status = OrderStatus.DONE
+    db.commit()
+
+    login_as(admin)
+    response = client.post(
+        f"/dashboard/support/{order_ticket.id}/to-support",
+        data={"price": "дорого", "csrf_token": _csrf(client)},
+        follow_redirects=False,
+    )
+    assert response.status_code == 303
+    db.refresh(order)
+    # The status is untouched when the amount cannot be parsed.
+    assert order.status is OrderStatus.DONE
+
+
+def test_to_support_without_a_linked_order_is_rejected(
+    client, db, admin, login_as, ticket
+):
+    login_as(admin)
+    response = client.post(
+        f"/dashboard/support/{ticket.id}/to-support",
+        data={"price": "0", "csrf_token": _csrf(client)},
+        follow_redirects=False,
+    )
+    assert response.status_code == 303
+    db.refresh(ticket)
+    assert ticket.order_id is None

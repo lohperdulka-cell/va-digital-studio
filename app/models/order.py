@@ -77,6 +77,46 @@ class Order(Base):
     def price_display(self) -> str:
         return format_money(self.price_final)
 
+    @property
+    def price_is_final(self) -> bool:
+        """True once staff have agreed the amount.
+
+        A price counts as agreed from "В работе" onwards — that is the step
+        where an administrator has confirmed it in the dashboard.
+        """
+        return self.price_final is not None and self.status in {
+            OrderStatus.IN_PROGRESS,
+            OrderStatus.REVIEW,
+            OrderStatus.DONE,
+            OrderStatus.SUPPORT,
+        }
+
+    @property
+    def price_from_display(self) -> str:
+        """The catalogue "from X" figure, used while the price is provisional."""
+        if self.service is not None and self.service.price_from is not None:
+            return format_money(self.service.price_from)
+        return format_money(None)
+
+    @property
+    def price_label(self) -> str:
+        """How the amount reads in the chat header.
+
+        Three states: a confirmed figure, an estimate taken from the service
+        while the order is still being discussed, and "not agreed yet" for a
+        draft or a bespoke project with no catalogue anchor.
+        """
+        if self.price_is_final:
+            return f"Точная цена: {self.price_display}"
+        if self.status in {OrderStatus.DRAFT, OrderStatus.DISCUSSING}:
+            if self.service is not None and self.service.price_from is not None:
+                return f"Примерная цена: от {self.price_from_display}"
+        return "Цена ещё не согласована"
+
+    @property
+    def chat_closed(self) -> bool:
+        return self.status.chat_closed
+
     def unread_for(self, *, is_admin: bool) -> int:
         """Count messages the given side has not read yet."""
         return sum(

@@ -17,7 +17,7 @@ from app.database import SessionLocal
 from app.errors import ForbiddenError, NotFoundError
 from app.logging_config import get_logger
 from app.models import Order
-from app.models.enums import MessageKind, OrderStatus
+from app.models.enums import MessageKind
 from app.schemas import ChatMessageIn
 from app.security.deps import CurrentUser, DbSession
 from app.security.ratelimit import RateLimiter
@@ -80,6 +80,14 @@ def chat_page(
     # An admin who owns the order sees it as a client, not as staff.
     as_admin = user.is_admin and order.user_id != user.id
 
+    # The header names whoever is on the other side of the conversation.
+    if as_admin:
+        peer_name = order.user.display_name if order.user else "Клиент"
+        peer_initials = order.user.initials if order.user else "?"
+    else:
+        peer_name = chat_service.SUPPORT_NAME
+        peer_initials = chat_service.SUPPORT_INITIALS
+
     return render(
         request,
         "chat.html",
@@ -87,6 +95,8 @@ def chat_page(
             "order": order,
             "as_admin": as_admin,
             "ws_path": f"/ws/chat/{order.id}",
+            "peer_name": peer_name,
+            "peer_initials": peer_initials,
         },
     )
 
@@ -245,9 +255,13 @@ async def _handle_frame(
         if order is None:
             await connection.send({"type": "error", "detail": "Нет доступа к чату"})
             return
-        if order.status is OrderStatus.CANCELLED:
+        # A finished order is read-only for the client, but staff keep the
+        # ability to write — that is how a "Поддержка" conversation continues
+        # after the work itself is done.
+        is_staff_viewer = is_admin and order.user_id != user_id
+        if order.chat_closed and not is_staff_viewer:
             await connection.send(
-                {"type": "error", "detail": "Заказ отменён — чат закрыт"}
+                {"type": "error", "detail": "Заказ завершён — чат закрыт"}
             )
             return
 

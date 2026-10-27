@@ -23,6 +23,12 @@
   <div class="card">
     <form class="form" method="post" action="/support">
       <input type="hidden" name="{{ csrf_field_name }}" value="{{ csrf_token }}">
+      {% if order_id %}
+        <input type="hidden" name="order_id" value="{{ order_id }}">
+        <p class="small muted" style="margin:0">
+          {{ t('Обращение по заказу') }} <strong>#{{ order_id }}</strong>
+        </p>
+      {% endif %}
 
       {% if not current_user %}
         <div class="field">

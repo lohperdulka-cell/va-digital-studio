@@ -37,6 +37,7 @@ class OrderStatus(StrEnum):
     IN_PROGRESS = "in_progress"
     REVIEW = "review"
     DONE = "done"
+    SUPPORT = "support"
     CANCELLED = "cancelled"
 
     @property
@@ -51,13 +52,23 @@ class OrderStatus(StrEnum):
     def is_terminal(self) -> bool:
         return self in {OrderStatus.DONE, OrderStatus.CANCELLED}
 
+    @property
+    def chat_closed(self) -> bool:
+        """True when the order chat no longer accepts messages.
+
+        A finished order can be reopened by moving it to ``SUPPORT``, so the
+        closure is a state of the order, not of the conversation.
+        """
+        return self in {OrderStatus.DONE, OrderStatus.CANCELLED}
+
 
 _ORDER_STATUS_LABELS = {
     OrderStatus.DRAFT: "Черновик",
     OrderStatus.DISCUSSING: "Обсуждение",
-    OrderStatus.IN_PROGRESS: "В работе",
+    OrderStatus.IN_PROGRESS: "В разработке",
     OrderStatus.REVIEW: "На проверке",
     OrderStatus.DONE: "Завершён",
+    OrderStatus.SUPPORT: "Поддержка",
     OrderStatus.CANCELLED: "Отменён",
 }
 
@@ -67,6 +78,7 @@ _ORDER_STATUS_CSS = {
     OrderStatus.IN_PROGRESS: "status-progress",
     OrderStatus.REVIEW: "status-review",
     OrderStatus.DONE: "status-done",
+    OrderStatus.SUPPORT: "status-support",
     OrderStatus.CANCELLED: "status-cancelled",
 }
 

@@ -70,6 +70,15 @@
             {% if ticket.user %}{{ ticket.user.display_name }}{% else %}{{ t('Аноним') }}{% endif %}
           </span>
         </li>
+        {% if ticket.order %}
+          <li class="meta-list__row">
+            <span class="meta-list__label">{{ t('Заказ') }}</span>
+            <span class="meta-list__value">
+              <a href="/dashboard/orders/{{ ticket.order.id }}">#{{ ticket.order.id }}</a>
+              <span class="badge {{ ticket.order.status.css_class }}">{{ ticket.order.status.label }}</span>
+            </span>
+          </li>
+        {% endif %}
         {% if ticket.replied_at %}
           <li class="meta-list__row">
             <span class="meta-list__label">{{ t('Ответ отправлен') }}</span>
@@ -82,6 +91,23 @@
         <form method="post" action="/dashboard/support/{{ ticket.id }}/reopen" style="margin-top:16px">
           <input type="hidden" name="{{ csrf_field_name }}" value="{{ csrf_token }}">
           <button class="btn btn--ghost btn--block" type="submit">{{ t('Открыть заново') }}</button>
+        </form>
+      {% endif %}
+
+      {% if ticket.order and ticket.order.status != OrderStatus.SUPPORT %}
+        {# Reopens the linked order's chat under the "Поддержка" status. #}
+        <form method="post" action="/dashboard/support/{{ ticket.id }}/to-support"
+              style="margin-top:16px">
+          <input type="hidden" name="{{ csrf_field_name }}" value="{{ csrf_token }}">
+          <label class="field__label" for="support-price-{{ ticket.id }}">
+            {{ t('Стоимость поддержки, ₽') }}
+          </label>
+          <input class="input" type="text" id="support-price-{{ ticket.id }}"
+                 name="price" value="0" inputmode="decimal"
+                 placeholder="{{ t('0 — без доплаты') }}">
+          <button class="btn btn--primary btn--block" type="submit" style="margin-top:8px">
+            {{ t('Взять в поддержку') }}
+          </button>
         </form>
       {% endif %}
     </div>

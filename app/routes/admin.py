@@ -267,6 +267,37 @@ def support_reopen(
     return _redirect(f"/dashboard/support/{ticket_id}")
 
 
+@router.post("/support/{ticket_id}/to-support")
+def support_to_support(
+    request: Request,
+    ticket_id: int,
+    admin: CurrentAdmin,
+    db: DbSession,
+    price: str = Form(default="0"),
+):
+    """Reopen the linked order's chat under the "Поддержка" status."""
+    ticket = support_service.get_ticket(db, ticket_id)
+    if ticket is None:
+        raise NotFoundError(detail="Обращение не найдено")
+    if ticket.order_id is None:
+        flash(request, "Обращение не связано с заказом", "error")
+        return _redirect(f"/dashboard/support/{ticket_id}")
+
+    try:
+        order = support_service.reopen_order_for_support(
+            db, ticket=ticket, price=price
+        )
+    except ValueError as exc:
+        flash(request, str(exc), "error")
+        return _redirect(f"/dashboard/support/{ticket_id}")
+
+    if order is None:
+        flash(request, "Заказ не найден", "error")
+    else:
+        flash(request, f"Заказ №{order.id} переведён в поддержку", "success")
+    return _redirect(f"/dashboard/support/{ticket_id}")
+
+
 # --- Services --------------------------------------------------------------
 
 

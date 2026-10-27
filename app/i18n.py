@@ -935,6 +935,7 @@ TRANSLATIONS: dict[str, str] = {
     "Черновик": "Draft",
     "Обсуждение": "Discussion",
     "В работе": "In progress",
+    "В разработке": "In development",
     "На проверке": "In review",
     "Завершён": "Completed",
     "Отменён": "Cancelled",

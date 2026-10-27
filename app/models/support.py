@@ -21,6 +21,7 @@ from app.database import Base
 from app.models.enums import TicketStatus
 
 if TYPE_CHECKING:  # pragma: no cover - typing only
+    from app.models.order import Order
     from app.models.user import User
 
 
@@ -32,6 +33,11 @@ class SupportTicket(Base):
     # Tickets may be raised by anonymous visitors, hence the nullable user link.
     user_id: Mapped[int | None] = mapped_column(
         ForeignKey("users.id", ondelete="SET NULL"), index=True, default=None
+    )
+    # Set when the enquiry names an order, which is how a finished order's
+    # owner reaches support and how staff find the conversation again.
+    order_id: Mapped[int | None] = mapped_column(
+        ForeignKey("orders.id", ondelete="SET NULL"), index=True, default=None
     )
     email: Mapped[str] = mapped_column(String(320), index=True)
     name: Mapped[str] = mapped_column(String(200), default="")
@@ -59,6 +65,7 @@ class SupportTicket(Base):
     )
 
     user: Mapped[User | None] = relationship(back_populates="support_tickets")
+    order: Mapped[Order | None] = relationship()
     thread: Mapped[list[SupportMessage]] = relationship(
         back_populates="ticket",
         cascade="all, delete-orphan",
@@ -69,6 +76,10 @@ class SupportTicket(Base):
     @property
     def display_name(self) -> str:
         return self.name or (self.user.display_name if self.user else self.email)
+
+    @property
+    def is_order_ticket(self) -> bool:
+        return self.order_id is not None
 
     def __repr__(self) -> str:  # pragma: no cover - debugging aid
         return f"<SupportTicket id={self.id} status={self.status.value}>"

@@ -35,39 +35,8 @@
   </div>
 
   {# data-ws-path drives the VAChat client in app.js #}
-  <section class="chat" data-chat data-ws-path="{{ ws_path }}">
-    <div class="chat__header">
-      <div>
-        <strong>
-          {% if as_admin %}{{ t('Чат') }} {{ t('с клиентом') }}{% else %}{{ t('Чат') }} {{ t('с менеджером') }}{% endif %}
-        </strong>
-        <div class="tiny dim">
-          {% if order.service %}{{ order.service.title }}{% else %}{{ t('Индивидуальный проект') }}{% endif %}
-        </div>
-      </div>
-      <span class="spacer"></span>
-      <span class="chat__status">
-        <span class="chat__dot" data-chat-status></span>
-      </span>
-    </div>
-
-    <div class="chat__log" data-chat-log role="log" aria-live="polite"
-         aria-label="{{ t('Сообщения') }} {{ t('чата') }}">
-      <div class="chat__msg chat__msg--system">
-        <div class="chat__bubble">{{ t('Загружаем историю сообщений…') }}</div>
-      </div>
-    </div>
-
-    <div class="chat__typing" data-chat-typing aria-live="polite"></div>
-
-    <form class="chat__form" data-chat-form autocomplete="off">
-      <label class="sr-only" for="chat-input">{{ t('Сообщение') }}</label>
-      <textarea class="chat__input" id="chat-input" name="text" rows="1"
-                maxlength="2000" placeholder="{{ t('Напишите сообщение…') }}"
-                data-chat-input required></textarea>
-      <button type="submit" class="btn btn--primary">{{ t('Отправить') }}</button>
-    </form>
-  </section>
+  {% set chat_staff = as_admin %}
+  {% include "partials/chat.html" %}
 
   <p class="tiny dim" style="margin-top:12px">
     {{ t('Сообщения') }} {{ t('сохраняются в истории заказа. Не отправляйте пароли и данные карт.') }}
@@ -82,11 +51,15 @@
     if (!root || !window.VAChat) return;
     window.VAChat({
       wsPath: root.dataset.wsPath,
+      peerName: root.dataset.chatPeer,
+      closed: root.dataset.chatOpen !== "true",
       logSelector: "[data-chat-log]",
       formSelector: "[data-chat-form]",
       inputSelector: "[data-chat-input]",
       statusSelector: "[data-chat-status]",
-      typingSelector: "[data-chat-typing]"
+      statusTextSelector: "[data-chat-status-text]",
+      typingSelector: "[data-chat-typing]",
+      noteSelector: "[data-chat-note]"
     });
   });
 </script>
