@@ -250,6 +250,8 @@ TRANSLATIONS: dict[str, str] = {
         "Pick a direction or open a card to see the scope and timeline."
     ),
     "Все": "All",
+    "Активные": "Active",
+    "Завершённые": "Completed",
     "дн.": "d",
     "Ничего не найдено": "Nothing found",
     "В этой категории пока нет услуг.": "There are no services in this category yet.",

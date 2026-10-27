@@ -32,6 +32,16 @@ ACTIVE_STATUSES = (
     OrderStatus.DISCUSSING,
     OrderStatus.IN_PROGRESS,
     OrderStatus.REVIEW,
+    OrderStatus.SUPPORT,
+)
+
+# The complement of ACTIVE_STATUSES.  An order is either still moving or it is
+# finished; keeping the two lists aligned is what makes the client's tab
+# counters add up to the total.  A supported order is live work, not closed:
+# its chat was reopened.
+CLOSED_STATUSES = (
+    OrderStatus.DONE,
+    OrderStatus.CANCELLED,
 )
 
 
@@ -94,13 +104,28 @@ def get_order_with_messages(db: Session, order_id: int) -> Order | None:
     )
 
 
-def list_for_user(db: Session, user_id: int, *, limit: int | None = None) -> list[Order]:
+def list_for_user(
+    db: Session,
+    user_id: int,
+    *,
+    limit: int | None = None,
+    scope: str = "all",
+) -> list[Order]:
+    """A client's orders, newest first.
+
+    ``scope`` powers the tabs on "Мои заказы": ``active`` keeps the work that
+    is still moving, ``closed`` the finished and cancelled ones.
+    """
     statement = (
         select(Order)
         .where(Order.user_id == user_id)
         .options(selectinload(Order.service), selectinload(Order.messages))
         .order_by(Order.created_at.desc(), Order.id.desc())
     )
+    if scope == "active":
+        statement = statement.where(Order.status.in_(ACTIVE_STATUSES))
+    elif scope == "closed":
+        statement = statement.where(Order.status.in_(CLOSED_STATUSES))
     if limit is not None:
         statement = statement.limit(limit)
     return list(db.scalars(statement))
@@ -110,6 +135,7 @@ def stats_for_user(db: Session, user_id: int) -> OrderStats:
     total = int(
         db.scalar(select(func.count(Order.id)).where(Order.user_id == user_id)) or 0
     )
+    # Support counts as live work: its chat is open, so it is not "завершено".
     active = int(
         db.scalar(
             select(func.count(Order.id)).where(
@@ -118,7 +144,15 @@ def stats_for_user(db: Session, user_id: int) -> OrderStats:
         )
         or 0
     )
-    return OrderStats(total=total, active=active, done=total - active)
+    done = int(
+        db.scalar(
+            select(func.count(Order.id)).where(
+                Order.user_id == user_id, Order.status.in_(CLOSED_STATUSES)
+            )
+        )
+        or 0
+    )
+    return OrderStats(total=total, active=active, done=done)
 
 
 def list_all(

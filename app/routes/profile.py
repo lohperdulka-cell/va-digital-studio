@@ -48,11 +48,20 @@ def my_orders(
     request: Request,
     user: CurrentUser,
     db: DbSession,
+    scope: str = "all",
 ):
+    # Anything unrecognised falls back to "all" rather than 422, so a stray
+    # query string still renders the page.
+    if scope not in {"all", "active", "closed"}:
+        scope = "all"
     return render(
         request,
         "orders_list.html",
-        {"orders": order_service.list_for_user(db, user.id)},
+        {
+            "orders": order_service.list_for_user(db, user.id, scope=scope),
+            "scope": scope,
+            "order_stats": order_service.stats_for_user(db, user.id),
+        },
     )
 
 

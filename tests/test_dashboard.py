@@ -636,3 +636,63 @@ def test_to_support_without_a_linked_order_is_rejected(
     assert response.status_code == 303
     db.refresh(ticket)
     assert ticket.order_id is None
+
+
+# --- "Мои заказы" tabs -----------------------------------------------------
+
+
+@pytest.fixture
+def mixed_orders(db, make_user, service) -> list[Order]:
+    """One order per tab: live, supported, finished."""
+    owner = make_user("tabs@example.com", name="Клиент Табов")
+    rows = [
+        Order(user_id=owner.id, service_id=service.id, title="Активный",
+              description="В работе", status=OrderStatus.IN_PROGRESS),
+        Order(user_id=owner.id, service_id=service.id, title="На поддержке",
+              description="После сдачи", status=OrderStatus.SUPPORT),
+        Order(user_id=owner.id, service_id=service.id, title="Завершённый",
+              description="Сдан", status=OrderStatus.DONE),
+    ]
+    db.add_all(rows)
+    db.commit()
+    for row in rows:
+        db.refresh(row)
+    return rows
+
+
+def test_orders_tabs_split_active_and_closed(client, db, login_as, mixed_orders):
+    owner = db.get(type(mixed_orders[0].user), mixed_orders[0].user_id)
+    login_as(owner)
+
+    active = client.get("/profile/orders?scope=active").text
+    assert "Активный" in active and "На поддержке" in active
+    assert "Завершённый" not in active
+
+    closed = client.get("/profile/orders?scope=closed").text
+    assert "Завершённый" in closed
+    assert "Активный" not in closed and "На поддержке" not in closed
+
+    everything = client.get("/profile/orders").text
+    assert all(title in everything for title in ("Активный", "На поддержке", "Завершённый"))
+
+
+def test_orders_tabs_are_labelled_and_counted(client, db, login_as, mixed_orders):
+    owner = db.get(type(mixed_orders[0].user), mixed_orders[0].user_id)
+    login_as(owner)
+    body = client.get("/profile/orders").text
+    flat = " ".join(body.split())
+    for label in ("Все", "Активные", "Завершённые"):
+        assert label in flat
+    # Support counts as live work: three total, two active, one finished.
+    assert "Активные 2" in flat
+    assert "Завершённые 1" in flat
+
+
+def test_unknown_scope_falls_back_to_all(client, db, login_as, mixed_orders):
+    owner = db.get(type(mixed_orders[0].user), mixed_orders[0].user_id)
+    login_as(owner)
+    response = client.get("/profile/orders?scope=teleported")
+    assert response.status_code == 200
+    assert "Завершённый" in response.text
+
+

@@ -16,6 +16,17 @@
     <a class="btn btn--primary btn--sm" href="/catalog">{{ t('+ Новый заказ') }}</a>
   </div>
 
+  <div class="filters">
+    <div class="filters__group">
+      <a class="filter-pill {% if scope == 'all' %}is-active{% endif %}"
+         href="/profile/orders">{{ t('Все') }} {{ order_stats.total }}</a>
+      <a class="filter-pill {% if scope == 'active' %}is-active{% endif %}"
+         href="/profile/orders?scope=active">{{ t('Активные') }} {{ order_stats.active }}</a>
+      <a class="filter-pill {% if scope == 'closed' %}is-active{% endif %}"
+         href="/profile/orders?scope=closed">{{ t('Завершённые') }} {{ order_stats.done }}</a>
+    </div>
+  </div>
+
   {% if orders %}
     <div class="table-wrap">
       <table class="table">
