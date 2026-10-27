@@ -11,7 +11,7 @@ from decimal import Decimal
 from sqlalchemy import select
 
 from app.config import settings
-from app.models import Case, News, Review, Service
+from app.models import Case, News, Review, Service, User
 from app.models.enums import ServiceCategory
 from app.seed import (
     bootstrap,
@@ -278,3 +278,43 @@ def test_owner_fallback_does_not_override_a_listed_admin(db, monkeypatch):
     boss = db.scalar(select(User).where(User.email == "boss@example.com"))
     assert boss.is_admin is True
     assert oldest.is_admin is False
+
+
+def test_adding_a_second_address_keeps_the_first_admin(db, monkeypatch):
+    """Extending ADMIN_EMAILS must add an administrator, not replace one."""
+    db.add(User(email="first@example.com", name="Первый"))
+    db.add(User(email="second@example.com", name="Второй"))
+    db.commit()
+
+    monkeypatch.setattr(settings, "admin_emails", "first@example.com")
+    promote_admins(db)
+
+    monkeypatch.setattr(
+        settings, "admin_emails", "first@example.com, second@example.com"
+    )
+    promote_admins(db)
+    db.expire_all()
+
+    first = db.scalar(select(User).where(User.email == "first@example.com"))
+    second = db.scalar(select(User).where(User.email == "second@example.com"))
+    assert first.is_admin is True, "the original administrator lost access"
+    assert second.is_admin is True, "the added address was not promoted"
+
+
+def test_dropping_an_address_demotes_that_account(db, monkeypatch):
+    """The list is authoritative, so removing an address revokes access."""
+    db.add(User(email="first@example.com", name="Первый"))
+    db.add(User(email="second@example.com", name="Второй"))
+    db.commit()
+
+    monkeypatch.setattr(
+        settings, "admin_emails", "first@example.com,second@example.com"
+    )
+    promote_admins(db)
+
+    monkeypatch.setattr(settings, "admin_emails", "second@example.com")
+    promote_admins(db)
+    db.expire_all()
+
+    first = db.scalar(select(User).where(User.email == "first@example.com"))
+    assert first.is_admin is False
