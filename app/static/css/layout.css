@@ -233,6 +233,11 @@
   .burger { display: none; }
 }
 
+/* A finger needs a bigger target than a mouse pointer. */
+@media (pointer: coarse) {
+  .burger { width: var(--tap); height: var(--tap); }
+}
+
 .burger__box { position: relative; width: 20px; height: 14px; }
 
 .burger__line {
@@ -288,6 +293,11 @@
 }
 
 .drawer.is-open { transform: translateX(0); }
+
+/* The class sets `display: flex`, which outranks the user-agent `[hidden]`
+   rule, so the closed drawer still laid out 100% off-screen and stretched the
+   document — every page scrolled sideways on a phone. */
+.drawer[hidden] { display: none; }
 
 .drawer__head {
   display: flex;
@@ -601,6 +611,11 @@
   gap: 24px;
   grid-template-columns: 1fr;
 }
+
+/* Grid and flex children default to `min-width: auto`, so the horizontally
+   scrolling nav below refused to shrink and pushed the whole page sideways on
+   a phone.  Allowing the items to shrink keeps the scroll inside the nav. */
+.dash > * { min-width: 0; }
 
 @media (min-width: 1024px) {
   .dash { grid-template-columns: 232px 1fr; align-items: start; }

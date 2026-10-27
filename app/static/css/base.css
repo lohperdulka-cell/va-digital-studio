@@ -44,8 +44,11 @@
   --shadow-lg: 0 20px 48px rgba(0, 0, 0, 0.5);
 
   --header-height: 68px;
-  --container: 1200px;
+  --container: 1280px;
   --transition: 180ms cubic-bezier(0.4, 0, 0.2, 1);
+  /* Minimum comfortable hit area for a finger.  Applied on coarse pointers
+     only, so a mouse keeps the denser desktop spacing. */
+  --tap: 44px;
 }
 
 *,
@@ -134,6 +137,14 @@ ul, ol { padding-left: 1.2em; }
   padding: 0 16px;
 }
 
+@media (min-width: 640px) {
+  .container { padding: 0 24px; }
+}
+
+@media (min-width: 1440px) {
+  .container { padding: 0 32px; }
+}
+
 .page {
   padding: 32px 0 72px;
   min-height: calc(100vh - var(--header-height));
@@ -184,7 +195,9 @@ ul, ol { padding-left: 1.2em; }
 .muted { color: var(--text-muted); }
 .dim { color: var(--text-dim); }
 .small { font-size: 0.875rem; }
-.tiny { font-size: 0.78rem; }
+/* 0.8rem (12.8px) is the floor: below that a caption stops being readable on
+   a phone held at arm's length. */
+.tiny { font-size: 0.8rem; line-height: 1.5; }
 .center { text-align: center; }
 .mono { font-family: "SFMono-Regular", ui-monospace, Menlo, Consolas, monospace; }
 
@@ -244,5 +257,93 @@ ul, ol { padding-left: 1.2em; }
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* --- Touch targets ------------------------------------------------------
+   A finger is not a mouse.  On coarse pointers every control grows to a
+   comfortable hit area (44 px for buttons, at least 28 px for inline text
+   links, which WCAG 2.2 AA puts at 24 px).  Guarded by the pointer type, so
+   the desktop layout keeps its denser spacing. */
+
+@media (pointer: coarse) {
+  .btn {
+    min-height: var(--tap);
+  }
+
+  .btn--sm {
+    min-height: 40px;
+    padding-inline: 16px;
+  }
+
+  .btn--icon {
+    min-width: var(--tap);
+    min-height: var(--tap);
+  }
+
+  .lang-switch {
+    min-width: var(--tap);
+    min-height: var(--tap);
+    justify-content: center;
+  }
+
+  /* .burger is sized in layout.css, which is loaded after this file, so its
+     42px rule would win over a same-specificity one here. */
+
+  .modal__close,
+  .flash__close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--tap);
+    min-height: var(--tap);
+  }
+
+  .header__link,
+  .dash__link,
+  .drawer__link,
+  .user-menu__item {
+    display: flex;
+    align-items: center;
+    min-height: var(--tap);
+  }
+
+  .filter-pill,
+  .chip,
+  .like-btn {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+  }
+
+  .pagination__link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--tap);
+  }
+
+  .faq-item__q {
+    min-height: var(--tap);
+  }
+
+  .select,
+  .input,
+  .textarea {
+    min-height: var(--tap);
+  }
+
+  /* Inline text links: pad the line box rather than the whole list. */
+  .footer__link,
+  .breadcrumbs a,
+  .card__title a,
+  .table a,
+  .auth__alt a {
+    display: inline-block;
+    padding-block: 6px;
+  }
+
+  .footer__list {
+    gap: 4px;
   }
 }

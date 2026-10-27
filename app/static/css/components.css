@@ -535,7 +535,7 @@
   text-align: center;
 }
 
-.chat__meta { font-size: 0.72rem; color: var(--text-dim); padding: 0 6px; }
+.chat__meta { font-size: 0.78rem; color: var(--text-dim); padding: 0 6px; }
 
 .chat__form {
   display: flex;
